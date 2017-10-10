@@ -1,0 +1,35 @@
+title Email Address Verification
+option footer=bar
+
+participant Web Interface as w
+participant Back-end Server as s
+participant Database as d
+participant Postmark as p
+participant User as u
+
+w->s: {verify: email=user@example.com}
+activate s
+state over s: generate link with unique ID
+s->d: {store: user information}
+deactivate s
+activate d
+d-->s: {status: success}
+deactivate d
+activate s
+state over s: prepare email containing ID
+s->p: {email content: verify your account}
+deactivate s
+activate p
+p->u: {email}
+p-->s: {status: success}
+deactivate p
+state over u: clicks link
+u->s: {unique ID}
+activate s
+state over s: check ID validity
+s->d: {set: user verified}
+deactivate s
+activate d
+d-->s: {status: success}
+deactivate d
+state over s: completed

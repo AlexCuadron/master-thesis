@@ -1,0 +1,43 @@
+title Registration Page Captcha
+option footer=bar
+
+participant User as u
+participant Web Interface as w
+participant Back-end Server as s
+participant Captcha Server as c
+
+state over u: visit registration page
+w->s: {GET: site key}
+activate s
+s-->w: {site key}
+deactivate s
+state over w: display CAPTCHA
+
+opt user is deemed suspicious
+loop
+
+w->c: {GET: challenge}
+activate c
+state over c: generate challenge
+c-->w: {challenge}
+deactivate c
+state over w: display challenge
+state over u: solve challenge
+state over w: validate challenge
+
+end
+end
+
+state over w: generate response key
+w->c: {site key, response key}
+activate w
+w->s: {validate: response key}
+deactivate w
+activate s
+s->c: {secret key, response key}
+deactivate s
+activate c
+state over c: validate response key
+c-->s: {status: success}
+deactivate c
+state over s: completed

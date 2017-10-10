@@ -1,0 +1,39 @@
+%% Custom commands
+%% ===============
+
+%% Special characters for number sets, e.g. real or complex numbers.
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\X}{\mathbb{X}}
+
+%% Fixed/scaling delimiter examples (see mathtools documentation)
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}
+
+%% Use the alternative epsilon per default and define the old one as \oldepsilon
+\let\oldepsilon\epsilon
+\renewcommand{\epsilon}{\ensuremath\varepsilon}
+
+%% Also set the alternate phi as default.
+\let\oldphi\phi
+\renewcommand{\phi}{\ensuremath{\varphi}}
+
+\newcommand{\lee}{\textit{SCIONLab Experimentation Environment}\xspace}
+\newcommand{\lcs}{\textit{SCIONLab Coordination Service}\xspace}
+\newcommand{\lmi}{\textit{Local Management Service}\xspace}
+\newcommand{\cords}{\textit{Coordination Service}\xspace}
+\newcommand{\fnurl}[2]{\href{#2}{#1}\footnote{\url{#2}}\xspace}
+\newcommand{\fnote}[2]{#1\footnote{#2}}\xspace
+\newcommand{\fnoteurl}[3]{\href{#2}{#1}\footnote{{#3:} \url{#2}}\xspace}
+\newcommand{\code}[1]{\colorbox{lightgray}{\textit{"#1"}}\xspace}
+\newif\ifcomment
+\newcommand{\cmnt}[1]{\ifcomment {\color{orange}{#1}} \fi}
+
+
+\newcommand{\cusomtoday}{\ifcase \month \or January \or February \or March \or %
+	April \or May \or June \or July \or August \or September \or October \or November \or %
+	December \fi \number \day, \number \year} 

@@ -1,0 +1,33 @@
+\chapter{Conclusion}
+
+\section{Summary of Achievements}
+
+The improvements developed in this thesis are a step towards the envisioned \lee, were interested parties are provided with a user-friendly management tool to register and download their own SCIONLab ASes. In particular, the enhancements described in this thesis allow the \lcs, said management tool, to be opened up for public use. The achievement of this goal was supported by contributions made as part of this thesis.
+
+The set of implemented features includes email sending functionality, a new, robust user registration mechanism, a new access control model, improvements for the engineering team regarding testing, deployment and maintainability, as well as many small additions such as error corrections and code re-factorizations to meet new standards.
+
+Most developed software components were tested and proved to work in a live environment. Others were leveraged by the development team to implement additional innovations.
+
+\section{Future Work}
+
+From here, \lcs can be further improved by working on the requirements not addressed by this thesis. These are the following (numbered as in Section \ref{func_req}):
+
+\begin{enumerate}
+	\setcounter{enumi}{6}
+	\item Implementation of missing APIs between \cords and the \lmi
+	\item A visualization of the SCIONLab Experimentation network accessible by users
+\end{enumerate}
+
+In addition to above requirements, the \lcs could benefit from these enhancements:
+
+\begin{itemize}
+	\item Currently, only one AS can be managed per account. It is a new requirement to increase this limit to support multiple ASes.
+	\item It could be beneficial to have a rate limiting middleware for protecting APIs exposed by \lcs against \fnote{DoS}{Denial of Service} attacks.
+	\item Not all functionality of \lcs is covered by unit tests. Additional tests could minimize manual testing overhead.
+	\item Adapting the Ansible playbook to be used in production would facilitate deployment.
+	\item A task runner for front end code could be leveraged to automate repetitive tasks, such as minifying and unit testing the web interface.
+\end{itemize}
+
+
+
+ 

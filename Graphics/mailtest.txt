@@ -1,0 +1,2 @@
+Postmark: https://www.mail-tester.com/web-e5qmc
+Exim4: https://www.mail-tester.com/web-19sk3
