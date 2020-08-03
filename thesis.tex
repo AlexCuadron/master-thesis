@@ -6,7 +6,7 @@
 
 \PassOptionsToPackage{dvipsnames}{xcolor}
 
-%% We use the memoir class because it offers a many easy to use features.
+%% We use the memoir class because it offers many easy to use features.
 \documentclass[11pt,a4paper,titlepage]{memoir}
 
 %% Packages
@@ -21,7 +21,7 @@
 %% Use 'american' for American English.  Note that if you change this,
 %% the next LaTeX run may show spurious errors.  Simply run it again.
 %% If they persist, remove the .aux file and try again.
-\usepackage[english]{babel}
+\usepackage[american]{babel}
 
 %% Input encoding 'utf8'. In some cases you might need 'utf8x' for
 %% extra symbols. Not all editors, especially on Windows, are UTF-8
@@ -98,7 +98,7 @@
 \advisors{Advisors: Prof.\ Dr.\ Adrian Perrig, Prof.\ Dr.\ David Hausheer, Dr.\ Ercan Ucan}
 \department{Department of Computer Science}
 %\date{\cutsomtoday} % don't change date after submission
-\date{October 7, 2017}
+\date{\customtoday}
 
 \begin{document}
 
@@ -129,14 +129,13 @@
 \mainmatter
 
 %% Your real content!
-\input{Chapters/Introduction} % Introduction
-\input{Chapters/Background} % Background Theory 
-\input{Chapters/Related_Work} % Discussion of Related Work
-\input{Chapters/Requirements} % Design Objectives
-\input{Chapters/Architecture} % Feature Design
-\input{Chapters/Implementation} % Updated components / New components
-\input{Chapters/Evaluation} % Evaluation
-\input{Chapters/Conclusion} % Conclusion
+\input{chapters/introduction} % Introduction
+\input{chapters/background} % Background Theory 
+\input{chapters/related} % Discussion of Related Work
+\input{chapters/architecture} % Feature Design
+\input{chapters/implementation} % Updated components / New components
+\input{chapters/evaluation} % Evaluation
+\input{chapters/conclusion} % Conclusion
 
 \appendix
 
@@ -147,6 +146,6 @@
 \bibliography{refs}
 \bibliographystyle{unsrtnat}
 
-\includepdf[pages={-}]{declaration-originality-filled.pdf}
+\includepdf[pages={-}]{declaration-originality.pdf}
 
 \end{document}
