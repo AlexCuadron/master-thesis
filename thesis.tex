@@ -45,7 +45,7 @@
 
 %% LaTeX' own graphics handling
 \usepackage{graphicx}
-\graphicspath{ {Graphics/} } %tell package where to find graphics
+\graphicspath{ {figures/} } %tell package where to find graphics
 
 
 %% We unfortunately need this for the Rules chapter.  Remove it
@@ -92,13 +92,12 @@
 %%render comments
 \commentfalse
 
-\title{\LARGE{Design and Implementation of Functionality, Security and Maintainability Enhancements for SCIONLab Coordination Service}}
-\author{Claude H\"ahni}
-\thesistype{Bachelor Thesis}
-\advisors{Advisors: Prof.\ Dr.\ Adrian Perrig, Prof.\ Dr.\ David Hausheer, Dr.\ Ercan Ucan}
+\title{\LARGE{Mondrian: A Comprehensive Inter-Domain Network Zoning Architecture}}
+\author{Claude Hähni}
+\thesistype{Master Thesis}
+\advisors{Advisors: Prof.\ Dr.\ Adrian Perrig, Dr.\ Jonghoon Kwon, Patrick Bamert}
 \department{Department of Computer Science}
-%\date{\cutsomtoday} % don't change date after submission
-\date{\customtoday}
+\date{\customtoday} % replace with fixed date once submission is done
 
 \begin{document}
 
@@ -135,11 +134,12 @@
 \input{chapters/architecture} % Feature Design
 \input{chapters/implementation} % Updated components / New components
 \input{chapters/evaluation} % Evaluation
+\input{chapters/practical_considerations.tex} % considerations for deployability
 \input{chapters/conclusion} % Conclusion
 
 \appendix
 
-\input{Appendices/AppendixA}
+\input{appendices/appendixA}
 
 \backmatter
 

@@ -61,7 +61,7 @@
 	commentstyle=\color{OliveGreen},
 	numbers=left,
 	numbersep=5pt,
-	showstringspaces=false, 
+	showstringspaces=false,
 	stringstyle=\color{magenta},
 	tabsize=4,
 	language=golang
@@ -69,10 +69,10 @@
 
 \lstdefinelanguage{yaml}
 {
- morekeywords=[1]{mysql_db,mysql_pass,apt,name,password,host,login_password,mysql_db,mysql_user,with_items,jobs,build,docker,image,environment,MYSQL_ROOT_PASSWORD,MYSQL_DATABASE,steps,run,command,working_directory,version},
+	morekeywords=[1]{mysql_db,mysql_pass,apt,name,password,host,login_password,mysql_db,mysql_user,with_items,jobs,build,docker,image,environment,MYSQL_ROOT_PASSWORD,MYSQL_DATABASE,steps,run,command,working_directory,version},
 	sensitive=true,
 	morestring=[b]",
-%	morecomment=[l]:,
+	%	morecomment=[l]:,
 }
 
 \lstset{ % add your own preferences
@@ -83,7 +83,7 @@
 	moredelim = [l][\functionColonHighlight]{:}{ljl}
 	numbers=left,
 	numbersep=5pt,
-	showstringspaces=false, 
+	showstringspaces=false,
 	stringstyle=\color{magenta},
 	tabsize=4,
 	language=yaml
@@ -94,7 +94,9 @@
 
 
 %% [REC] Fancy character protrusion.  Must be loaded after all fonts.
-\usepackage[activate]{pdfcprot}
+%\usepackage[activate]{pdfcprot}
 
 %% [REC] Nicer tables.  Read the excellent documentation.
 \usepackage{booktabs}
+
+\usepackage{wrapfig}
