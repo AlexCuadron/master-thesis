@@ -16,8 +16,8 @@ iii) the opensource version of the PISKES system~\cite{benjamin2020code} as well
 software-based gateway working with SCION are available, thus enabling rapid prototyping. 
 
 
-\subsection{Translation Point}
-\label{ssec:tp}
+\section{Translation Point}
+\label{sec:tp}
 
 To implement a prototype of \tp, we extend the SCION-IP Gateway (SIG)~\cite{sig2020code}.
 The main functionality of SIG is to encapsulate legacy IP packets into SCION packets and 
@@ -85,8 +85,8 @@ in which the zone transfer rules are stored. The two tables are populated with t
 acquired from the controller. The key table is where the shared first-level keys are 
 accumulated. 
 
-\subsection{Controller}
-\label{ssec:controller}
+\section{Controller}
+\label{sec:controller}
 
 We implemented the controller as a Web server written in golang with an SQLite database storing the 
 zone information and transfer policies. The controller offers an API which allows
@@ -112,8 +112,8 @@ of errors. Furthermore, the abstraction uses prepared statements for insertions,
 retrievals of data. This protects against SQL-injections and improves the speed of queries. 
 
 
-\subsection{Authentication Token}
-\label{ssec:token}
+\section{Authentication Token}
+\label{sec:token}
 
 The \name packet format follows the IP tunneling conventions of encapsulating the original 
 packet with a new outer IP header that indicates the two tunnel endpoints as the new source 

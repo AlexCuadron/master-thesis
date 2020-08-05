@@ -1,4 +1,4 @@
-\chapter{Architecture Overview}
+\chapter{Architecture}
 
 \begin{wrapfigure}{r}{0.5\textwidth}
     \begin{center}
@@ -12,8 +12,8 @@ In this section, we present the \name architecture and the underlying protocols 
 Later, we describe our key-establishment system that enables rapid key derivation 
 and distribution in large networks. 
 
-\subsection{\name Bootstrapping}
-\label{ssec:bootstrapping}
+\section{\name Bootstrapping}
+\label{sec:bootstrapping}
 
 The bootstrapping procedure is performed when a new zone or a new remote site 
 (a group of zones along with a \tp) joins the network. 
@@ -141,8 +141,8 @@ the Resource Public Key Infrastructure (RPKI)~\cite{rfc7115,rfc6810}.
 % \end{equation*}
 
 
-\subsection{Protocol Description}
-\label{ssec:protocol}
+\section{Protocol Description}
+\label{sec:protocol}
 
 Now, we describe how two end hosts within different remote sites are able to communicate. 
 Figure~\ref{fig:protocol} illustrates a protocol level design including authorization,
@@ -280,8 +280,8 @@ authorization step which requires an additional challenge-response protocol to t
 controller, improving practicality for \tps running at small branches limited in 
 operational resources. 
 
-\subsection{Key Management}
-\label{ssec:keymanagement}
+\section{Key Management}
+\label{sec:keymanagement}
 
 In order for the \tps to create and verify authenticators based on symmetric cryptography 
 we need a scheme to distribute keys amongst them. Ideally, the keys used for every 

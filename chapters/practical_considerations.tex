@@ -7,8 +7,8 @@ be realized on today's enterprise infrastructure.
 % We further discuss about the distributed controller in Appendix~\ref{ssec:distributedcontroller}.
 
 
-\subsection{NAT Devices}
-\label{ssec:nat}
+\section{NAT Devices}
+\label{sec:nat}
 Multiple hosts connected through a NAT device appear as a single host to the
 \tp. \textit{Internal} NAT devices hardly pose a problem since the hosts under that NAT 
 device are all subject to the same subnet and therefore belong to a single network zone. 
@@ -34,8 +34,8 @@ might slightly increase the size of the header, but does not degrade the securit
 the underlying authentication.
 
 
-\subsection{Tunneling Granularity} %\paragraph{Zone-to-Zone VPN}
-\label{ssec:granularity}
+\section{Tunneling Granularity} %\paragraph{Zone-to-Zone VPN}
+\label{sec:granularity}
 % Thanks to the flexible and scalable key derivation scheme introduced in~\cite{rot2020piskes},
 % the key establishment supports the secure tunneling in different granularities: 
 % i) site-to-site tunneling, ii) zone-to-zone tunneling, and iii) site-to-zone tunneling 
@@ -98,8 +98,8 @@ state, while still providing unique symmetric keys per zone.
 % \end{table}
 
 
-\subsection{Distributed Controllers}
-\label{ssec:distributedcontroller}
+\section{Distributed Controllers}
+\label{sec:distributedcontroller}
 Driven by the scalability and reliability issues inherent to a single physical controller, 
 namely \textit{single-point-of-failure}, logically centralized control-planes built on 
 physically distributed instances find wide acceptance in the current practice. The most 
@@ -176,8 +176,8 @@ controller by establishing a new channel with $C_{best}$. The migration process
 is also applied when changes in the network are detected.
 
 
-\subsection{Nonce Reset}
-\label{ssec:nonce}
+\section{Nonce Reset}
+\label{sec:nonce}
 % Authenticators are created using an AEAD algorithm with an underlying AES-128 cipher in GCM mode. GCM requires a nonce as input argument to build counters which are then used to create the keystream. 
 The same nonce must never be used twice with the same key, otherwise the security of the 
 cipher significantly decreases. In theory it is easy to create nonces that fulfill this 
@@ -249,8 +249,8 @@ to approach this problem.
 
 
 
-\subsection{Incremental Deployability}
-\label{ssec:deployability}
+\section{Incremental Deployability}
+\label{sec:deployability}
 
 To be incrementally deployable, \name does not require changes from end hosts nor the local network infrastructure. \name can take a supportive role by complementing already installed lines of defense such as firewalls, IPS, and IDS. For instance, traffic can be pre-filtered by \tps before it reaches firewalls located deeper inside the network. This approach favors an incremental deployment strategy. On the other hand, \name can also be used as a single, all-in-one solution providing packet filtering, tunneling, and routing within one device. Such a deployment is especially interesting for small branch sites with much simpler network layouts. Here, \name can drastically reduce the number of devices that need to be maintained.
 
