@@ -1,3 +1,225 @@
 \chapter{Implementation}
 \label{impl}
 
+We now describe the implementation details of each component in \name. 
+We implemented a prototype that comprises a software-based gateway and controller.
+The main development language is golang 1.14.1~\cite{golang2020}, and we used SQLite3
+\cite{sqlite2020} for the database. To secure control-plane channels, we also leveraged 
+TLS 1.3~\cite{rfc8446}. The prototype is publicly available~\cite{claude2020code}. 
+% \claude{this citation needs to point to the actual code eventually} \jk{yes, on cameraready.}
+
+Our implementation builds on top of the SCION architecture~\cite{Perrig2017}. 
+The implementation decision has been driven by the following reasons: i) SCION provides 
+network programmability along with the separation of control and data plane, ii) SCION comes 
+with an embedded PKI system that can be utilized for our key management system, and 
+iii) the opensource version of the PISKES system~\cite{benjamin2020code} as well as a 
+software-based gateway working with SCION are available, thus enabling rapid prototyping. 
+
+
+\subsection{Translation Point}
+\label{ssec:tp}
+
+To implement a prototype of \tp, we extend the SCION-IP Gateway (SIG)~\cite{sig2020code}.
+The main functionality of SIG is to encapsulate legacy IP packets into SCION packets and 
+vice versa. In this context, a SIG acts as a gateway between an internal (legacy) network 
+and an external (SCION) network. Since \tp is designed as a gateway that bridges LAN 
+traffic over WAN---the underlying inter-domain routing protocol is not relevant here---the 
+functional aspects of \tp meets with what SIG provides. To be integrated with SIG, \tp
+mediates between the UNIX socket and SIG socket, and performs zone transfer authorization 
+and verification for all incoming/outgoing packets. 
+% Figure~\ref{fig:tp} illustrates 
+% the implementation details of the modularized \tp design that consists of three main 
+% modules: i) core module, ii) transfer module, and iii) authentication module. 
+Here we describe the three main modules of \tp: i) core module, ii) transfer module, and iii) authentication module. 
+
+
+% \begin{figure}[t]
+% 	\begin{center}
+% 		\includegraphics[width=0.47\textwidth]{figs/tp.eps}
+% 	\end{center}
+% 	\caption{An overview of the modularized \tp implementation. Major usecases are also 
+% 	indicated with colored arrows.}
+% 	\label{fig:tp}
+% \end{figure}
+
+\paragraph{Core Module}
+The core module is the main loop of \tp. It reads packets from the UNIX socket and
+redistributes them to the corresponding interfaces. More precisely, when receiving packets
+from the internal network, it retrieves metadata (further illustrated in 
+Appendix~\ref{apdx:metadata}) from the raw packet, and hands over to the transfer module. 
+If the zone transfer is authorized ($return=1$),
+the packet is then either forwarded back to the internal network or, in case the given destination is in a remote zone, once again handed over to the authentication module to be prepared for secure transmission. 
+For packets coming from the external network, \tp first calls the authentication module for
+verification of the conveyed authentication token. Packets with invalid tokens are simply discarded.
+
+\paragraph{Transfer Module}
+The main objective of this module is to check the zone transfer rules. The transfer
+module communicates with its controller to maintain a list of up-to-date zone transfer policies.
+To this end, it establishes a TLS channel with the controller, downloads policies,
+and populates the database. 
+We implemented the transfer module to support different drop-in options using APIs.
+
+\begin{itemize}
+	\item No-Op: This is for a setup in which no inter-domain zone transfers are required, 
+		  but only inter-domain zone extensions.
+	\item Standard: This mode would perform an authorization check for the requested
+	      zone transfer based on the source and destination IP addresses. 
+	\item Firewall: If needed, the module could be instantiated as a full-fledged firewall.
+	      This mode would be useful for cases where the firewall can not be replaced. 
+	      % \claude{should we discuss this further in the discussion section?}
+\end{itemize}
+
+\paragraph{Authentication Module}
+For inter-domain packet transmissions, the authentication module issues an 
+authentication token for the packet. It (ideally) caches the first-level keys prefetched
+from other \tps and derive a second-level key to generate the authentication token. 
+Inversely, for packets from other \tps, it derives the corresponding 2nd-level key
+and verifies the delivered authentication token.
+
+\paragraph{Database}
+The \tp's database consists of three tables: \textit{Zone Table}, \textit{Zone Transfer 
+Table}, and \textit{Key Table}. The zone table is used to map hosts to their corresponding 
+zones. For a fast table lookup, we leverage Radix Trees (also known as a trie or compact prefix 
+tree), \texttt{cidranger}~\cite{cidranger} in particular. The zone transfer table is a database 
+in which the zone transfer rules are stored. The two tables are populated with the information 
+acquired from the controller. The key table is where the shared first-level keys are 
+accumulated. 
+
+\begin{figure}[t]
+	\begin{center}
+		\includegraphics[width=0.47\textwidth]{figs/header.eps}
+	\end{center}
+	\caption{\name packet format for secure tunneling.}
+	% \claude{authentication scope does not cover L3 Header (SCION)}
+	\label{fig:header}
+\end{figure}
+
+
+\begin{table*}[!htb]%\scriptsize
+	\begin{minipage}{.31\linewidth}
+        \centering
+        \caption{Benchmark results for the transfer policy lookup (ns).}
+    	\label{tab:authorization}
+            \begin{tabular}{*4{r}}
+			\toprule
+			\# of Policies & Cache Hit & Cache Miss \\
+			\midrule
+			100			& 307 	& 236 \\
+			\SI{1}{K}	& 405 	& 264 \\
+			\SI{10}{K}	& 423 	& 293 \\
+			\SI{100}{K}	& 497 	& 375 \\
+			\bottomrule
+		\end{tabular}
+	\end{minipage}\hspace*{2em}
+    \begin{minipage}{.31\linewidth}
+    	\caption{Key derivation times for different network sizes (ns).}
+     	\label{tab:derivation}
+      	\centering
+         \begin{tabular}{*4{r}}
+			\toprule
+			\# of Branches & 1st-level Key & 2nd-level Key \\
+			\midrule
+			100			& 154 	& 88 \\	% 618-530=88
+			\SI{1}{K}		& 155 	& 97 \\	% 627-530=97
+			\SI{10}{K}		& 161 	& 175 \\	% 705-530=175
+			\SI{100}{K}		& 157	& 111 \\	% 641-530=111
+			\bottomrule
+		\end{tabular}
+	% \claude{add updated nubmers to tables}
+    \end{minipage}\hspace*{2em}
+    \begin{minipage}{.31\linewidth}
+      	\centering
+        \caption{Processing times for the encryption/decryption (ns).}
+    	\label{tab:authentication}
+        \begin{tabular}{*4{r}}
+			\toprule
+			Packet Size (byte) & Encryption & Decryption \\
+			\midrule
+			100		& 856 	& 659 \\
+			500		& 1082 	& 747 \\
+			1000	& 1338 	& 850 \\
+			1500	& 1557 	& 950 \\
+			\bottomrule
+		\end{tabular}
+    \end{minipage}
+\end{table*}
+
+% \end{landscape}
+
+\begin{figure*}[!htb]
+	\begin{minipage}{.32\linewidth}
+		\centering
+		\includegraphics[width=\linewidth]{figs/intra_domain.eps}
+		\caption{Processing time for intra-domain zone transfer.}
+		\label{fig:intra}
+		% \claude{add updated nubmers to graph}
+	\end{minipage}\hspace*{1em}
+	\begin{minipage}{.32\linewidth}
+		\centering
+		\includegraphics[width=\linewidth]{figs/inter_sender.eps}
+		\caption{Processing time on $TP_S$ for inter-domain zone transfer.}
+		\label{fig:inter_sender}
+	\end{minipage}\hspace*{1em}
+	\begin{minipage}{.32\linewidth}
+		\centering
+		\includegraphics[width=\linewidth]{figs/inter_receiver.eps}
+		\caption{Processing time on $TP_R$ for inter-domain zone transfer.}
+		\label{fig:inter_receiver}
+	\end{minipage}
+\end{figure*}
+
+\subsection{Controller}
+\label{ssec:controller}
+
+We implemented the controller as a Web server written in golang with an SQLite database storing the 
+zone information and transfer policies. The controller offers an API which allows
+\tps to fetch zoning information via HTTPS GET requests.
+
+\paragraph{APIs}
+The endpoints of interest are: i) \textit{/api/get-subnets} and ii) \textit{/api/get-transfers}.
+Using these endpoints \tps fetch IP subnet and zone transfer rules. Important to note is that 
+the controller only hands out the subset of the full set of rules which is required for the 
+requesting \tp to be operational. This minimizes the size of data transmissions and also 
+improves security by not disclosing the full network view to every \tp. For every call to the 
+API the controller first verifies the authenticity of the caller before the request is forwarded 
+to the corresponding handler. The handlers then load the requested data from the database and 
+send it to the caller as JSON-formatted bytes.
+
+\paragraph{Database}
+The database consists of four tables (Zones, Sites, Subnets, Transfers), each describing one of 
+the core elements of the architecture.
+The database schema is listed in the Appendix~\ref{apdx:controllerdb}. An abstraction layer 
+written in golang allows the controller to interface with the database using high-level calls. 
+The abstraction layer makes use of transactional queries to ensure consistency even in the event 
+of errors. Furthermore, the abstraction uses prepared statements for insertions, deletions and 
+retrievals of data. This protects against SQL-injections and improves the speed of queries. 
+
+
+\subsection{Authentication Token}
+\label{ssec:token}
+
+The \name packet format follows the IP tunneling conventions of encapsulating the original 
+packet with a new outer IP header that indicates the two tunnel endpoints as the new source 
+and destination. The original packet is encrypted and then authenticated along with the new
+packet header fields. Figure~\ref{fig:header} shows the detailed packet structure and coverages 
+of the confidentiality and integrity guarantee. 
+
+The authentication token starts with one byte of reserved space for a \textit{Type} field. While 
+currently unused this will be useful in the future for distinguishing different variations of 
+the authentication token. \textit{ZoneID} depicts the 3 byte long zone identifier of the 
+destination zone. It is used by the receiving \tp to derive the correct key for MAC verification 
+and decryption. The next 4 bytes are occupied by a \textit{TimeStamp} which is added by the 
+sending \tp. It is the Unix time at the point of sending the packet. The receiving \tp uses this 
+timestamp to reject replayed packets. The timestamp is followed by a \textit{Nonce} of 12 bytes.
+
+The nonce as well as the previous three token fields and the data to be encrypted (\textit{EIP}) 
+serve as input to a \textit{Galois/Counter Mode} (GCM) algorithm with an underlying 
+\textit{AES-128} block cipher as cryptographic primitive. This mode of operation is widely 
+adopted for its performance as well as the capability to do \textit{authenticated encryption 
+with associated data} (AEAD). Here it provides authenticity over the header fields 
+(\textit{Type}, \textit{ZoneID}, \textit{TimeStamp}) and the data in \textit{EIP} while 
+\textit{EIP} additionally also gets encrypted.
+
+The 16 byte \textit{MAC} generated by GCM is the last field in the authentication token. Both, 
+the nonce and the MAC sizes follow the guidelines recommended by NIST SP 800-38D \cite{nistgcm}.
+
