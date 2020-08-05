@@ -4,94 +4,91 @@
 % With the prototype implementation, we conduct extensive evaluation including 
 % system/network-wide benchmarks. 
 
-% % \begin{landscape}
-% \begin{table*}[!htb]%\scriptsize
-% 	\begin{minipage}{.31\linewidth}
-%         \centering
-%         \caption{Benchmark results for the transfer policy lookup (ns).}
-%     	\label{tab:authorization}
-%             \begin{tabular}{*4{r}}
-% 			\toprule
-% 			\# of Policies & Cache Hit & Cache Miss \\
-% 			\midrule
-% 			100			& 307 	& 236 \\
-% 			\SI{1}{K}	& 405 	& 264 \\
-% 			\SI{10}{K}	& 423 	& 293 \\
-% 			\SI{100}{K}	& 497 	& 375 \\
-% 			\bottomrule
-% 		\end{tabular}
-% 	\end{minipage}\hspace*{2em}
-%     \begin{minipage}{.31\linewidth}
-%     	\caption{Key derivation times for different network sizes (ns).}
-%      	\label{tab:derivation}
-%       	\centering
-%          \begin{tabular}{*4{r}}
-% 			\toprule
-% 			\# of Branches & 1st-level Key & 2nd-level Key \\
-% 			\midrule
-% 			% 10		& 189 	& 122 \\	% 841-530-189=122
-% 			100			& 199 	& 116 \\	% 845-530-199=116
-% 			\SI{1}{K}		& 211 	& 136 \\	% 877-530-211=136
-% 			\SI{10}{K}		& 238 	& 201 \\	% 969-530-238=201
-% 			\SI{100}{K}		& 427	& 154 \\	% 1111-530-427=154
-% 			\bottomrule
-% 		\end{tabular}
-%     \end{minipage}\hspace*{2em}
-%     \begin{minipage}{.31\linewidth}
-%       	\centering
-%         \caption{Processing times for the encryption/decryption (ns).}
-%     	\label{tab:authentication}
-%         \begin{tabular}{*4{r}}
-% 			\toprule
-% 			Packet Size (byte) & Encryption & Decryption \\
-% 			\midrule
-% 			100		& 856 	& 659 \\
-% 			500		& 1082 	& 747 \\
-% 			1000	& 1338 	& 850 \\
-% 			1500	& 1557 	& 950 \\
-% 			\bottomrule
-% 		\end{tabular}
-%     \end{minipage}
-% \end{table*}
-% % \end{landscape}
+ % \begin{landscape}
+ \begin{table}[htb]%\scriptsize
+ 	 	\begin{minipage}{.47\linewidth}
+         \caption{Benchmark results for the transfer policy lookup (ns).}
+     	\label{tab:authorization}
+             \begin{tabularx}{1\linewidth}{X|XX}
+ 			\toprule
+ 			\# of Policies & Cache Hit & Cache Miss \\
+ 			\midrule
+ 			100			& 307 	& 236 \\
+ 			\SI{1}{K}	& 405 	& 264 \\
+ 			\SI{10}{K}	& 423 	& 293 \\
+ 			\SI{100}{K}	& 497 	& 375 \\
+ 			\bottomrule
+ 		\end{tabularx}
+ 	\end{minipage}
+ 	      	 	\begin{minipage}{.47\linewidth}
+     	\caption{Key derivation times for different network sizes (ns).}
+      	\label{tab:derivation}
+          \begin{tabularx}{1\linewidth}{X|XX}
+ 			\toprule
+ 			\# of Branches & 1st-level Key & 2nd-level Key \\
+ 			\midrule
+ 			% 10		& 189 	& 122 \\	% 841-530-189=122
+ 			100			& 199 	& 116 \\	% 845-530-199=116
+ 			\SI{1}{K}		& 211 	& 136 \\	% 877-530-211=136
+ 			\SI{10}{K}		& 238 	& 201 \\	% 969-530-238=201
+ 			\SI{100}{K}		& 427	& 154 \\	% 1111-530-427=154
+ 			\bottomrule
+ 		\end{tabularx}
+ 	 	\end{minipage}\vspace{2em}
+ 	 	\begin{minipage}{.47\linewidth}
+         \caption{Processing times for the encryption/decryption (ns).}
+     	\label{tab:authentication}
+         \begin{tabularx}{1\linewidth}{X|XX}
+ 			\toprule
+ 			Packet Size (byte) & Encryption & Decryption \\
+ 			\midrule
+ 			100		& 856 	& 659 \\
+ 			500		& 1082 	& 747 \\
+ 			1000	& 1338 	& 850 \\
+ 			1500	& 1557 	& 950 \\
+ 			\bottomrule
+ 		\end{tabularx}
+ 	 	\end{minipage}
+ \end{table}
+ % \end{landscape}
 
-% \begin{figure*}[!htb]
-% 	\begin{minipage}{.32\linewidth}
-% 		\centering
-% 		\includegraphics[width=\linewidth]{figs/intra_domain.eps}
-% 		\caption{Processing time for intra-domain zone transfer.}
-% 		\label{fig:intra}
-% 	\end{minipage}\hspace*{1em}
-% 	\begin{minipage}{.32\linewidth}
-% 		\centering
-% 		\includegraphics[width=\linewidth]{figs/inter_sender.eps}
-% 		\caption{Processing time on $TP_S$ for inter-domain zone transfer.}
-% 		\label{fig:inter_sender}
-% 	\end{minipage}\hspace*{1em}
-% 	\begin{minipage}{.32\linewidth}
-% 		\centering
-% 		\includegraphics[width=\linewidth]{figs/inter_receiver.eps}
-% 		\caption{Processing time on $TP_R$ for inter-domain zone transfer.}
-% 		\label{fig:inter_receiver}
-% 	\end{minipage}
-% \end{figure*}
+ \begin{figure*}[h]
+ 	\begin{minipage}{.32\linewidth}
+ 		\centering
+ 		\includegraphics[width=\linewidth]{intra_domain.eps}
+ 		\caption{Processing time for intra-domain zone transfer.}
+ 		\label{fig:intra}
+ 	\end{minipage}\hspace*{1em}
+ 	\begin{minipage}{.32\linewidth}
+ 		\centering
+ 		\includegraphics[width=\linewidth]{inter_sender.eps}
+ 		\caption{Processing time on $TP_S$ for inter-domain zone transfer.}
+ 		\label{fig:inter_sender}
+ 	\end{minipage}\hspace*{1em}
+ 	\begin{minipage}{.32\linewidth}
+ 		\centering
+ 		\includegraphics[width=\linewidth]{inter_receiver.eps}
+ 		\caption{Processing time on $TP_R$ for inter-domain zone transfer.}
+ 		\label{fig:inter_receiver}
+ 	\end{minipage}
+ \end{figure*}
 
 \begin{figure*}[!htb]
 	\begin{minipage}{.32\linewidth}
 		\centering
-		\includegraphics[width=\linewidth]{figs/pps.eps}
+		\includegraphics[width=\linewidth]{pps.eps}
 		\caption{Forwarding performance of \tp for various size of packets.}
 		\label{fig:forwarding}
 	\end{minipage}\hspace*{1em}
 	\begin{minipage}{.32\linewidth}
 		\centering
-		\includegraphics[width=\linewidth]{figs/cdf_goodput.eps}
+		\includegraphics[width=\linewidth]{cdf_goodput.eps}
 		\caption{CDF of goodput for 1400-bytes of maximum segment size (MMS).}
 		\label{fig:goodput}
 	\end{minipage}\hspace*{1em}
 	\begin{minipage}{.32\linewidth}
 		\centering
-		\includegraphics[width=\linewidth]{figs/cdf_throughput.eps}
+		\includegraphics[width=\linewidth]{cdf_throughput.eps}
 		\caption{CDF of throughput including extra header fields.}
 		\label{fig:throughput}
 	\end{minipage}
