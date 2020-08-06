@@ -1,12 +1,5 @@
 \chapter{Architecture}
-
-\begin{wrapfigure}{r}{0.5\textwidth}
-    \begin{center}
-        \includegraphics[width=0.47\textwidth]{tp_controlflow.png}
-        \captionof{figure}{\textit{Control flow of the Zone Translation Point}}
-        \label{archi:overview}
-    \end{center}
-\end{wrapfigure}
+\label{arch}
 
 In this section, we present the \name architecture and the underlying protocols in detail. 
 Later, we describe our key-establishment system that enables rapid key derivation 
@@ -102,7 +95,7 @@ that, prior to first use, there needs to be an out-of-band setup where the \tp i
 configured. This can either be done by the owner of the controller shipping a pre-configured 
 machine to the new remote location or by the remote location setting up a machine and 
 granting the controller owner management access to the given machine. Bootstraping \tps 
-with multiple controllers will be described in~\S\ref{ssec:distributedcontroller} with
+with multiple controllers will be described in~\S\ref{sec:distributedcontroller} with
 practical considerations such as controller discovery, \tp migration, and policy consistency.
 
 The controller synchronizes with \tps to keep their list of other \tps in the network 
@@ -150,12 +143,11 @@ forwarding, and verification. A detailed header design follows.
 
 \begin{figure}[t]
 \begin{center}
-\includegraphics[width=.7\textwidth]{protocol.eps}
+\includegraphics[width=.9\textwidth]{protocol.eps}
 \end{center}
 \caption{Protocol details for data forwarding. The controller frequently updates \tps 
 with the latest zone transfer policies.}
-% \ml{Use consistent naming of zones (Z1 vs.\ Zone A; also in main text). Do the ``Zone Transfers'' describe the allowed connections? Where is Z3?}
-% \jk{Update figure. We don't use the on-demandzone transfer authorization.}}
+
 \label{fig:protocol}
 \end{figure}
 
@@ -200,7 +192,7 @@ number, but we consider it to be a small number used for policy freshness.
 The \tp discards the packet (Host Unreachable) if $rule=$ \texttt{drop}. Otherwise, 
 the \tp looks up its routing table and transmits the packet. There exist two types of 
 zone transfer cases: one for local (same-site) zone transfers and another for remote zone 
-transfers as addressed in \S\ref{ssec:casestudy}. For the local zone transfer, the \tp 
+transfers as addressed in \S\ref{sec:casestudy}. For the local zone transfer, the \tp 
 simply rewrites the Ethernet header by following the local layer~2 protocol, and 
 forwards it through a corresponding interface. Since the local network is assumed to
 be trustworthy, no additional packet processing is necessary apart from the authorization.

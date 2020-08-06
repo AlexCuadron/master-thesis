@@ -2,10 +2,10 @@
 \label{overview}
 
 This section provides an overview of \name. We first elaborate the fundamental goals 
-of this research, along with requirements, and design choices (\S\ref{ssec:design}). 
+of this research, along with requirements, and design choices (\S\ref{sec:design}). 
 We then outline \name including a brief introduction of each component and their
-workflow (\S\ref{ssec:overview}). Finally, we describe our threat model 
-(\S\ref{ssec:threatmodel}) and state our assumptions (\S\ref{ssec:assumptions}).
+workflow (\S\ref{sec:overview}). Finally, we describe our threat model 
+(\S\ref{sec:threatmodel}) and state our assumptions (\S\ref{sec:assumptions}).
 
 \section{Design Principles}
 \label{sec:design}
@@ -109,6 +109,15 @@ explicit network configuration is then distributed to the \tps via a secure cont
 channel to enforce the configuration at the individual premises.
 
 \paragraph{Communication Flow}
+
+%\begin{wrapfigure}{r}{0.5\textwidth}
+    \begin{center}
+        \includegraphics[width=0.47\textwidth]{tp_controlflow.png}
+        \captionof{figure}{\textit{Control flow of the Zone Translation Point}}
+        \label{archi:overview}
+    \end{center}
+%\end{wrapfigure}
+
 \name enables secure zone transfers over WAN as follows:
 
 \begin{enumerate}
@@ -183,8 +192,7 @@ denial-of-service for legitimate clients.
 A given enterprise network has a public key infrastructure (PKI). That is, the enterprise
 creates a trust model for its network infrastructure, acts as a trusted certificate authority 
 (CA), and issues certificates for the core systems. Entities can retrieve and verify the
-public keys of the core systems. There are open source projects, such as EJBCA~\cite{ejbca} 
-and OpenXPKI~\cite{openxpki}, available for setting up enterprise-grade PKIs.
+public keys of the core systems. There are open source projects, such as \fnurl{EJBCA}{https://svn.cesecore.eu/svn/ejbca/trunk/ejbca/} and \fnurl{OpenXPKI}{https://github.com/openxpki/openxpki/}, available for setting up enterprise-grade PKIs.
 
 \paragraph{Secure Cryptography} 
 Cryptographic primitives we use in \name are secure; authenticity, integrity, and 
