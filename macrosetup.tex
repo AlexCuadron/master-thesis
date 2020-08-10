@@ -41,13 +41,13 @@
 \newcommand{\fnurl}[2]{\href{#2}{#1}\footnote{\url{#2}}\xspace}
 \newcommand{\fnote}[2]{#1\footnote{#2}}\xspace
 \newcommand{\fnoteurl}[3]{\href{#2}{#1}\footnote{{#3:} \url{#2}}\xspace}
-\newcommand{\code}[1]{\colorbox{lightgray}{\textit{"#1"}}\xspace}
+\newcommand{\code}[1]{\colorbox{lightgray}{\textit{#1}}\xspace}
 \newif\ifcomment
 \newcommand{\cmnt}[1]{\ifcomment {\color{orange}{#1}} \fi}
 
 %% make bib section two columns and reduce font size
 \renewcommand{\bibpreamble}{\begin{multicols}{2}}
-\renewcommand{\bibpostamble}{\end{multicols}}
+		\renewcommand{\bibpostamble}{\end{multicols}}
 \renewcommand{\bibfont}{\footnotesize}
 
 \newcommand{\customtoday}{\ifcase \month \or January \or February \or March \or %

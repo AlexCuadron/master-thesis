@@ -1,31 +1,31 @@
 \chapter{Practical Considerations}
 \label{practical}
 
-In this section, we discuss some practical considerations including functional and 
+In this section, we discuss some practical considerations including functional and
 management aspects, along with various deployment scenarios describing how \name can
-be realized on today's enterprise infrastructure. 
+be realized on today's enterprise infrastructure.
 % We further discuss about the distributed controller in Appendix~\ref{ssec:distributedcontroller}.
 
 
 \section{NAT Devices}
 \label{sec:nat}
 Multiple hosts connected through a NAT device appear as a single host to the
-\tp. \textit{Internal} NAT devices hardly pose a problem since the hosts under that NAT 
-device are all subject to the same subnet and therefore belong to a single network zone. 
-Network operators establish a security policy on the translated IP address, such 
+\tp. \textit{Internal} NAT devices hardly pose a problem since the hosts under that NAT
+device are all subject to the same subnet and therefore belong to a single network zone.
+Network operators establish a security policy on the translated IP address, such
 that \tps are able to authenticate the zone transit requests from/to a host under the
 internal NAT device.
 
-However, an \textit{external} NAT device located in an external network, e.g., carrier grade NAT, 
+However, an \textit{external} NAT device located in an external network, e.g., carrier grade NAT,
 could affect the \tp's secure tunneling ability. The translated \tp's IP address
 would cause a MAC verification failure---recall that each symmetric key binds to the
-triplet including \tps' IP addresses as described in \S\ref{ssec:keymanagement}. 
+triplet including \tps' IP addresses as described in \S\ref{sec:keymanagement}.
 This, however, can be addressed by enforcing \tps to use their public IP addresses
 to derive the symmetric keys. The keys are still secure since the first-level key
 from which the pairwise keys are derived is exchanged with the CA-certified public
 keys. Discovering the translated \tp address is also not a problem thanks to
-the controller informing senders about the recipient \tp's address (see, Protocol 3 in 
-Figure~\ref{fig:protocol}). 
+the controller informing senders about the recipient \tp's address (see, Protocol 3 in
+Figure~\ref{fig:protocol}).
 
 A potential operational failure is where multiple \tps are behind the same NAT device.
 This would lead to \tps having identical keys from the view of remote \tps. One possible solution
@@ -40,8 +40,8 @@ the underlying authentication.
 % the key establishment supports the secure tunneling in different granularities: 
 % i) site-to-site tunneling, ii) zone-to-zone tunneling, and iii) site-to-zone tunneling 
 % (the one we take). 
-Secure tunneling can be realized in different granularities: i) site-to-site tunneling, 
-ii) zone-to-zone tunneling, and iii) site-to-zone tunneling (the one used by \name). 
+Secure tunneling can be realized in different granularities: i) site-to-site tunneling,
+ii) zone-to-zone tunneling, and iii) site-to-zone tunneling (the one used by \name).
 
 % Similar to IPSec VPN, the site-to-site tunneling requires a single symmetric key per
 % a \tp pair, e.g., the first-level key. Indeed, the site-to-site key establishment is 
@@ -49,27 +49,27 @@ ii) zone-to-zone tunneling, and iii) site-to-zone tunneling (the one used by \na
 % However, this approach requires another step of zone transfer verification.
 Similar to IPSec VPN, site-to-site tunneling provides strong guarantees about communication
 security and privacy for two tunnel endpoints.
-However, from a flexibility and manageability standpoint, having a site-to-site tunneling 
-architecture is not ideal. Every tunnel endpoint needs to share a key with every other 
+However, from a flexibility and manageability standpoint, having a site-to-site tunneling
+architecture is not ideal. Every tunnel endpoint needs to share a key with every other
 endpoint with which it wishes to exchange data. This adds state to the endpoints that
-needs to be kept in sync. Adding a new site requires an update on all the other sites that 
+needs to be kept in sync. Adding a new site requires an update on all the other sites that
 wish to communicate with the new site. Then, yet another layer of security middleboxes (e.g., firewalls) are required to perform zone transfer authentication since keys are do not designate a specific zone.
 
-An alternative way of providing authentication is to use one key per zone. In this model, 
-the \tp would sign the data on behalf of the zones. In case of a zone transfer, the \tp 
-would do the transfer and then use the key of the source/receiver zone pair. This approach 
-has the benefit that sender and receiver get decoupled as in principle any site that 
-contains a given zone is able to decrypt data destined for that zone. Adding a new site 
-would be as easy as fetching the right keys for the zones used in this site. This process 
+An alternative way of providing authentication is to use one key per zone. In this model,
+the \tp would sign the data on behalf of the zones. In case of a zone transfer, the \tp
+would do the transfer and then use the key of the source/receiver zone pair. This approach
+has the benefit that sender and receiver get decoupled as in principle any site that
+contains a given zone is able to decrypt data destined for that zone. Adding a new site
+would be as easy as fetching the right keys for the zones used in this site. This process
 is independent of all the other sites. However, a receiver \tp needs to be able to fetch
-the right keys for the zones, which means the zone transfer information must be visible, 
-and thus attacker could potentially learn the zone structure of the observed network. 
+the right keys for the zones, which means the zone transfer information must be visible,
+and thus attacker could potentially learn the zone structure of the observed network.
 % \claude{only the destination zone id would be leaked, same as in our model} 
-Also, having a separate key per zone pair does not scale since the number of zones get big 
+Also, having a separate key per zone pair does not scale since the number of zones get big
 very quickly for large networks.
 
 Driven by these considerations, we designed the new concept of site-to-zone tunneling,
-which represents a middle ground combining the advantages of the two approaches, the 
+which represents a middle ground combining the advantages of the two approaches, the
 notion of secure tunneling and zone transfer authentication. The symmetric keys
 are distinguishable depending on the destination zone, while at the same time the
 zone-to-zone security policies are not being exposed. Thanks to the flexible and scalable key derivation scheme introduced in~\cite{rot2020piskes}, the key establishment does not expand
@@ -100,12 +100,12 @@ state, while still providing unique symmetric keys per zone.
 
 \section{Distributed Controllers}
 \label{sec:distributedcontroller}
-Driven by the scalability and reliability issues inherent to a single physical controller, 
-namely \textit{single-point-of-failure}, logically centralized control-planes built on 
-physically distributed instances find wide acceptance in the current practice. The most 
-common approaches realizing distributed controllers can be broadly categorized into 
-horizontal distribution~\cite{berde2014onos,medved2014opendaylight} and hierarchical 
-distribution~\cite{hassas2012kandoo,yap2017taking}. Independent of which distribution 
+Driven by the scalability and reliability issues inherent to a single physical controller,
+namely \textit{single-point-of-failure}, logically centralized control-planes built on
+physically distributed instances find wide acceptance in the current practice. The most
+common approaches realizing distributed controllers can be broadly categorized into
+horizontal distribution~\cite{berde2014onos,medved2014opendaylight} and hierarchical
+distribution~\cite{hassas2012kandoo,yap2017taking}. Independent of which distribution
 architecture is used, we discuss location, coordination, and migration aspects of distributed
 controllers.
 
@@ -114,59 +114,59 @@ The notion of a logically centralized control-plane offers flexibility in networ
 and management. A key design choice is placement of the (distributed) controllers, which
 could impact to performance, reliability, and management scalability of a given network.
 There is comprehensive research on the controller placement problem considering practical
-issues from control latency to reliability, from cost-optimization to load balancing, and so 
-on~\cite{das2019survey,zhang2017role,he2019toward}. Among those, we are mainly interested in the 
-latency performance indicator; that is the latency between a controller and regional forwarding 
-devices. 
+issues from control latency to reliability, from cost-optimization to load balancing, and so
+on~\cite{das2019survey,zhang2017role,he2019toward}. Among those, we are mainly interested in the
+latency performance indicator; that is the latency between a controller and regional forwarding
+devices.
 
-The best latency is achieved when each branch site has its own controller. By a placement 
-near local \tps, the controller minimizes the \tp-controller latency for the zone 
+The best latency is achieved when each branch site has its own controller. By a placement
+near local \tps, the controller minimizes the \tp-controller latency for the zone
 transfer authorization protocol, allowing instant feedbacks for packet forwarding---we note
-that inter-controller communication for global coordination is commonly not latency sensitive. 
-For the sake of control-plane security, the controller resides in a highly restricted zone to 
+that inter-controller communication for global coordination is commonly not latency sensitive.
+For the sake of control-plane security, the controller resides in a highly restricted zone to
 which only the local \tps and remote controllers have access. Although the per-site controller
-offers the best performance regarding policy enforcement for the data-plane, there might be a 
+offers the best performance regarding policy enforcement for the data-plane, there might be a
 cost-efficiency problem for a large-scale network with thousands of branches.
 
 Alternatively, we consider a sparse distribution model, e.g., on edge-cloud systems.
 Similar to today's cloud services, network operators running geographically distributed
-data centers can instantiate multiple controllers at the central point of regional branches. 
+data centers can instantiate multiple controllers at the central point of regional branches.
 % \claude{branch centric?} 
-The control-plane latency overhead would be relatively higher compared to dense deployment 
-model---if the data center edges are geographically diverse, the overhead could be 
+The control-plane latency overhead would be relatively higher compared to dense deployment
+model---if the data center edges are geographically diverse, the overhead could be
 minimized---but, in terms of cost-optimization and management scalability, it could
 be a more viable approach.
 
 \paragraph{Coordination}
 It is important to keep consistency in global coordination across the distributed controllers.
-Indeed, inconsistency in security policy might grant hosts with a low security 
+Indeed, inconsistency in security policy might grant hosts with a low security
 clearance unauthorized access to highly restricted zones, resulting in unexpected information
 leakage and eventually administration failure. With this in mind, we consider a consensus
-algorithm with strong consistency guarantees~\cite{panda2013cap,phemius2014disco,shi2014giraffe}, 
+algorithm with strong consistency guarantees~\cite{panda2013cap,phemius2014disco,shi2014giraffe},
 where the security policy is dynamically shared/replicated across the distributed controller
 instances, ensuring concurrent policy enforcements toward the data-plane devices. There
-are numerous open-source projects, such as \fnurl{Consul}{https://github.com/hashicorp/consul},  
+are numerous open-source projects, such as \fnurl{Consul}{https://github.com/hashicorp/consul},
 \fnurl{Apache ZooKeeper}{https://zookeeper.apache.org/}, and \fnurl{ETCD}{https://github.com/etcd-io/etcd} available.
 
 \paragraph{\tp Migration}
-To benefit from the distributed controller environment, a dynamic controller discovery 
-process also becomes important. That is, \tps should be able to search a cluster of best 
-candidates, diagnose the performances of control latency, and seamlessly migrate to the 
+To benefit from the distributed controller environment, a dynamic controller discovery
+process also becomes important. That is, \tps should be able to search a cluster of best
+candidates, diagnose the performances of control latency, and seamlessly migrate to the
 best controller. To this end, we consider a two-step migration process: i) \tp-driven
-control channel initialization and ii) controller-driven \tp migration. 
+control channel initialization and ii) controller-driven \tp migration.
 
 \tps are responsible for establishing the first control plane channel with a controller.
 For example, a new \tp ($\tp_{new}$) has been configured to contact an initial controller
-acting as a first rendezvous point. 
+acting as a first rendezvous point.
 % \claude{a tp has been configured with an initial controller address acting as rendez-vous point?}
-The initial information contains the controller's IP address 
-($C$), the corresponding zone ID ($Z_{C}$), and the \tp's IP address behind which the controller 
-resides ($\tp_{C}$). If the controller locates in the remote site (i.e., $\tp_{new} 
-\neq \tp_{C}$), $\tp_{new}$ should connect with $C$ through $\tp_{C}$. Otherwise, e.g.,
+The initial information contains the controller's IP address
+($C$), the corresponding zone ID ($Z_{C}$), and the \tp's IP address behind which the controller
+resides ($\tp_{C}$). If the controller locates in the remote site (i.e., $\tp_{new}
+	\neq \tp_{C}$), $\tp_{new}$ should connect with $C$ through $\tp_{C}$. Otherwise, e.g.,
 $C$ is within the same LAN or in public network, $\tp_{new}$ can directly send $C$ a request
-for control-plane channel establishment. 
+for control-plane channel establishment.
 
-Once the \tp joined the network, the controller then initiates a migration process to 
+Once the \tp joined the network, the controller then initiates a migration process to
 find the best controller ($C_{best}$) for $\tp_{new}$. Upon a migration request broadcasted
 by $C$, other controllers measure the possible latency to $\tp_{new}$ and reply back
 the results. Then, $C$ elects $C_{best}$ considering the latency measurements and the
@@ -179,24 +179,24 @@ is also applied when changes in the network are detected.
 \section{Nonce Reset}
 \label{sec:nonce}
 % Authenticators are created using an AEAD algorithm with an underlying AES-128 cipher in GCM mode. GCM requires a nonce as input argument to build counters which are then used to create the keystream. 
-The same nonce must never be used twice with the same key, otherwise the security of the 
-cipher significantly decreases. In theory it is easy to create nonces that fulfill this 
-requirement. One can simply use a counter which is increased for every invocation of the 
-AEAD algorithm. In real systems this is not so easy to achieve since machines can crash 
-and lose their state, specifically their nonce counter. Outlined below are some techniques 
+The same nonce must never be used twice with the same key, otherwise the security of the
+cipher significantly decreases. In theory it is easy to create nonces that fulfill this
+requirement. One can simply use a counter which is increased for every invocation of the
+AEAD algorithm. In real systems this is not so easy to achieve since machines can crash
+and lose their state, specifically their nonce counter. Outlined below are some techniques
 to approach this problem.
 
 \begin{itemize}
-	\item \textit{Purely random nonce}: uses all bits of the nonce for randomness. Low 
-	probability for overlap but no guarantee even when no resets.
-	\item \textit{Counter paired with random sequence}: divides the nonce into a counter 
-	and a randomized part. Initialize the random part after every restart and increase 
-	the counter part for every packet. On reset start counter from zero with a fresh 
-	randomized part. In case of overlap all packets do overlap.
+	\item \textit{Purely random nonce}: uses all bits of the nonce for randomness. Low
+	      probability for overlap but no guarantee even when no resets.
+	\item \textit{Counter paired with random sequence}: divides the nonce into a counter
+	      and a randomized part. Initialize the random part after every restart and increase
+	      the counter part for every packet. On reset start counter from zero with a fresh
+	      randomized part. In case of overlap all packets do overlap.
 	\item \textit{Reset points}: defines specific resets points for the counter which are
-	stored on non-volatile memory (NV-memory). Increment counter in memory and write the 
-	next reset point to NV-memory when threshold is crossed. On crash restart counter from 
-	reset point on NV-memory.
+	      stored on non-volatile memory (NV-memory). Increment counter in memory and write the
+	      next reset point to NV-memory when threshold is crossed. On crash restart counter from
+	      reset point on NV-memory.
 \end{itemize}
 
 

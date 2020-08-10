@@ -19,9 +19,9 @@
 % functionalities. For each attack class, we describe potential attack methodologies and
 % mitigations.
 We analyze the security properties that \name provides, considering the threat model
-introduced in \S\ref{ssec:threatmodel}. The attack classes described here are twofold:
-i) attacks to infiltrate restricted and highly secure zones without a proper permission, 
-and ii) disruption attacks that prevent availability. 
+introduced in \S\ref{sec:threatmodel}. The attack classes described here are twofold:
+i) attacks to infiltrate restricted and highly secure zones without a proper permission,
+and ii) disruption attacks that prevent availability.
 % For each attack class, we describe potential attack methodologies and mitigations.
 
 % \subsection{Zone Structure Surveillance}
@@ -75,27 +75,27 @@ and ii) disruption attacks that prevent availability.
 \section{Infiltration without a Permission}
 \label{sec:infiltration}
 
-Apparently, one of the main attack objectives is to access valuable information assets 
-protected by access constraints. 
+Apparently, one of the main attack objectives is to access valuable information assets
+protected by access constraints.
 
 \paragraph{Man-In-The-Middle Attack}
-To become ``in the middle'', an attacker could initiate independent communication channels 
-with two \tps and relay messages between them. By using the attacker's public key for the 
+To become ``in the middle'', an attacker could initiate independent communication channels
+with two \tps and relay messages between them. By using the attacker's public key for the
 channel establishments, the attacker is able to generate valid packets that can bypass the
-\tp's authentication check.  
+\tp's authentication check.
 
 \name's PKI design prevents the MITM attacks. A MITM attack
 can succeed only if the attacker convinces each \tp that they are talking to each other.
-In the process of secure channel establishment, however, \tps authenticate each other using 
+In the process of secure channel establishment, however, \tps authenticate each other using
 the certificates issued by the mutually trusted CA (e.g., enterprise). Since the attacker's
 public key cannot be certified by a valid certificate issued by the CA, a MITM will fail.
 
 
 \paragraph{Packet Replay}
 Attackers can observe valid \name packets and then reuse them to transmit attack traffic.
-Nevertheless, the validity of the reused packet header will be compromised once the payload 
-is changed---recall that the authentication scope covers the entire packet including 
-AT and EIP as shown in Figure~\ref{fig:header}---and therefore attackers cannot 
+Nevertheless, the validity of the reused packet header will be compromised once the payload
+is changed---recall that the authentication scope covers the entire packet including
+AT and EIP as shown in Figure~\ref{fig:header}---and therefore attackers cannot
 successfully pass the authentication check at the recipient \tp.
 
 
@@ -118,17 +118,17 @@ Another approach is to brute-force the key used for authentication or the MAC. A
 \paragraph{Exhaustion Attack}
 Flooding the \tp's authentication process could be an effective attack vector. Attackers
 may attempt to forward a large number of packets to the target \tp in order to exhaust the
-\tp's resources. Even if the attack packets contain invalid authentication tokens, the \tp still 
-needs to verify these tokens, therefore wasting resources, preventing legitimate packets from getting through. 
+\tp's resources. Even if the attack packets contain invalid authentication tokens, the \tp still
+needs to verify these tokens, therefore wasting resources, preventing legitimate packets from getting through.
 
 To be resilient to such attacks, we consider operating multiple \tps at the entrypoints
-of cooperative networks. Multiple \tps enables network operators 
-to load balance and easily switch over to another \tp in case of a link (or a \tp) 
-failure. In fact, many data centers and large enterprise networks already employ equal-cost 
-multipathing (ECMP)~\cite{rfc2991,rfc2992} along with multiple gateways and ToRs (Top-of-Rack 
-switches) to provide reliable intra-networking services. In addition, to mitigate possible DoS 
-attacks from the public Internet, Microsoft implemented a global ECMP 
-infrastructure~\cite{ms2020ecmp}. Path-aware networking along with multipath communication 
+of cooperative networks. Multiple \tps enables network operators
+to load balance and easily switch over to another \tp in case of a link (or a \tp)
+failure. In fact, many data centers and large enterprise networks already employ equal-cost
+multipathing (ECMP)~\cite{rfc2991,rfc2992} along with multiple gateways and ToRs (Top-of-Rack
+switches) to provide reliable intra-networking services. In addition, to mitigate possible DoS
+attacks from the public Internet, Microsoft implemented a global ECMP
+infrastructure~\cite{ms2020ecmp}. Path-aware networking along with multipath communication
 % is also in the spotlights of both, industry and academia recently
 also enables active switching to different entry points, if some fail or are under DDoS attack.~\cite{Dawkins2018,Trammell2018}.
 
