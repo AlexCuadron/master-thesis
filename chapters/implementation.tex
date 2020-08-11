@@ -114,7 +114,11 @@ zone information and transfer policies. The controller offers an API which allow
 \tps to fetch zoning information via HTTPS GET requests.
 
 \paragraph{APIs}
-The endpoints of interest are: i) \code{/api/get-subnets} and ii) \code{/api/get-transfers}.
+The endpoints of interest are:
+\begin{enumerate}
+    \item \code{/api/get-subnets}
+    \item \code{/api/get-transfers}
+\end{enumerate}
 Using these endpoints \tps fetch IP subnet and zone transfer rules. Important to note is that
 the controller only hands out the subset of the full set of rules which is required for the
 requesting \tp to be operational. This minimizes the size of data transmissions and also
