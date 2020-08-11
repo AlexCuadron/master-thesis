@@ -2,37 +2,26 @@
 \label{intro}
 
 % about network security zoning
-Network zoning has long been an essential part of the Internet security infrastructure, 
-which logically partitions network and information assets into disjoint segments that share the 
-same security requirements and policies, and functional similarities. Zones define the network boundaries and their defense 
-requirements by stating the entities populating the zones, the entry points into the zone, and
-how traffic is monitored and filtered at these entry points. Informally, these zones 
-are realized by a virtualized separation at layer 2 (e.g., IEEE 802.1q~\cite{ieee2018vlan}) 
-with firewalls at higher levels governing data transfers between zones~\cite{mayer2000fang}. 
-% In general, security zones are 
+Network zoning has long been an essential part of the Internet security infrastructure,
+which logically partitions network and information assets into disjoint segments that share the
+same security requirements and policies, and functional similarities. Zones define the network boundaries
+and their defense
+requirements by stating the entities populating the zones, the entry points into the zones, and
+how traffic is monitored and filtered at these entry points. Informally, these zones
+are realized by a virtualized separation at layer 2 (e.g., IEEE 802.1q~\cite{ieee2018vlan})
+with firewalls at higher levels governing data transfers between zones~\cite{mayer2000fang}.
 
-% new requirements for the modern network zoning (motivation)
-% > Datacenters zoning (for tenant)
-% > Enterprise leveraging LaaS
-
-% Most enterprise networks have embraced the notion of security layered network classification,
-% that can be broadly classified as; a restricted network which houses business-critical IT 
-% assets, and a public access network where customer services are implemented, mediating access
-% from the public Internet. 
-% Most enterprise networks comprise with a large number of zones that define operational, 
-% organizational, and most importantly security factors.
-Each zone is identified by a distinct level of trust, and 
-% each pair of zones forms a trusted-untrusted relationship~\cite{obregon2015infrastructure}.
+Each zone is identified by a distinct level of trust, and
 forms a trusted/untrusted relationship with other zones~\cite{obregon2015infrastructure}.
-% \claude{there can also be trust-trust and untrust-untrust?}
 To realize the unidirectional trust model, firewalls are considered to be the most viable
-technology and are widely used in the current practice. However, operating firewalls in 
-large enterprises is often challenging for network operators and security architects. The 
-access control for network zones might be dynamic, and thus it requires complex 
-management schemes to accommodate a myriad of policies. While there are advanced 
+technology and are widely used in the current practice. However, operating firewalls in
+large enterprises is often challenging for network operators and security architects. The
+access control for network zones might be dynamic, and thus it requires complex
+management schemes to accommodate a myriad of policies. While there are advanced
 technologies such as virtual firewalls~\cite{deng2015vnguard,bakker2016network}, distributed
 security enforcement~\cite{markham2001security,yu2017psi}, and Unified
-Threat Management (UTM)~\cite{qi2007towards}, newly designed to enforce access control polices in extremely dynamic networks, network zone management and modeling 
+Threat Management (UTM)~\cite{qi2007towards}, newly designed to enforce access control polices in extremely
+dynamic networks, network zone management and modeling
 still remains cumbersome~\cite{ramasamy2011towards,gontarczyk2015blueprint}.
 
 % limitations on the current zoning techonologies
@@ -41,81 +30,70 @@ still remains cumbersome~\cite{ramasamy2011towards,gontarczyk2015blueprint}.
 % > management scalability (key management)
 Bridging geographically distant network zones is very challenging today. In general,
 network zones are created not only for security purposes but also because of geographical,
-operational, or organizational factors. Large enterprises with geographically distributed 
-branch networks, and possibly collaborative partners' networks need to be interconnected. 
-Given that distant network zones exchange information over an untrusted 
-network (e.g., the Internet), there is a risk that the communication exposes security-sensitive 
+operational, or organizational factors. Large enterprises with geographically distributed
+branch networks, and possibly collaborative partners' networks need to be interconnected.
+Given that distant network zones exchange information over an untrusted
+network (e.g., the Internet), there is a risk that the communication exposes security-sensitive
 information during transit. To mitigate
 such threats, administrators leverage additional security mechanisms (e.g.,
-IPsec~\cite{rfc4301} and SSL-VPN~\cite{sun2011advantages}) 
-% \ml{`VPN' hasn't been introduced yet.} \ml{``IPsec'' is normally written like this (with lower-case `s')} 
+IPsec~\cite{rfc4301} and SSL-VPN~\cite{sun2011advantages})
 which ensure confidentiality
 and integrity of the transmission over the untrusted network by encrypting and authenticating the data with
 securely shared cryptographic keys. Nonetheless, these technologies bring forth new challenges
-such as management scalability~\cite{felsch2018dangers} and compatibility issues with other   
+such as management scalability~\cite{felsch2018dangers} and compatibility issues with other
 security solutions~\cite{liu2008collaborative}---universal agreement with business partners on building collaborative security infrastructure is often problematic.
-% \claude{This is espcially problematic when collaborating with business partners as there is no universal agreement on what solution to use.}
 
 % the notion of distributed data centers
 
-% Passport summary
+% TP summary
 % > secure zone transfer over wan
 % > simplified zoning architecture (logical transit zone)
-%   > cost efficient: firewall x, lease line x
+% > cost efficient: firewall x, lease line x
 % > easy key management (management scalability)
-\name is a new network zoning architecture that secures inter-zone communication---which 
-operates on layer 3, supporting heterogeneous layer 2 architectures---while ensuring 
-scalable cryptographic-key management and flexible security policy enforcement. 
-% \ml{TODO: use consistent capitalization of ``layer'' (currently mix of lower and upper case).} 
-\name flattens the current hierarchically-complex network zone topology into a collection of 
-horizontal zones connected to a unified security gateway, called Zone Translation Point 
+\name is a new network zoning architecture that secures inter-zone communication---which
+operates on layer 3, supporting heterogeneous layer 2 architectures---while ensuring
+scalable cryptographic-key management and flexible security policy enforcement.
+\name flattens the current hierarchically-complex network zone topology into a collection of
+\cmnt{we never show what hierarchy was used before}
+horizontal zones connected to a unified security gateway, called Zone Translation Point
 (\tp), thus simplifying large enterprise networks.
 By interconnecting zones through \tps, complex zone restructuring operations become
 easier with respect to new zone initializations or zone migrations.
-The \tp ensures source authentication, zone transfer authorization, and illegitimate access filtering by acting as a secure ingress/egress point for network zones. A logically centralized control unit provides management scalability on zone classification and policy enforcement, and mediates cryptographic key establishment. 
-% \claude{controller is actually not involved in key managment}
-% \jk{Theoretically, it is in a way that the controller issues certificates for \tps and resets the 
-% local secret values by sending a key refresh command (although the parts are not implemented).}
-
-% \ml{If the term/abbreviation `\tp' is introduced, it should be used consistently. It is not quite clear if `\tp' and `gateway' refer to the same thing.}
-% \ml{In general, all abbreviations should be introduced once at first use and afterwards used consistently (\eg, VLAN)}
+The \tp ensures source authentication, zone transfer authorization, and illegitimate access filtering by
+acting as a secure ingress/egress point for network zones. A logically centralized control unit provides
+management scalability on zone classification and policy enforcement, and mediates cryptographic key
+establishment.
 
 A secure zone transfer is performed in three steps: i) the security gateway acquires
 access policies for each network zone from its controller, ii) the gateway issues a
-cryptographically protected authorization token if a given zone transfer request is 
-permitted, and iii) the network forwards only packets with a valid token. By leveraging 
-the notion of secure tunneling between two endpoints (i.e., a pair of local and remote \tps), 
-confidentiality and integrity of the zone transfer packets are ensured, while keeping the overhead of the authentication process small. For scalable key management, 
-we employ a key establishment system that enables dynamic key derivation 
+cryptographically protected authorization token if a given zone transfer request is
+permitted, and iii) the network forwards only packets with a valid token. By leveraging
+the notion of secure tunneling between two endpoints (i.e., a pair of local and remote \tps),
+confidentiality and integrity of the zone transfer packets are ensured, while keeping the overhead of
+the authentication process small. For scalable key management,
+we employ a key establishment system that enables dynamic key derivation
 and ensures perfect forward secrecy.
 
 % Evaluation
 We provide an implementation of \name that ensures secure zone transfer for
-both intra and inter-domain communication at line rate, while requiring no network-stack 
+both intra and inter-domain communication at line rate, while requiring no network-stack
 changes from end hosts. We extensively evaluate this implementation to demonstrate
-the practical viability of \name. The results show that the \tp introduces negligible 
+the practical viability of \name. The results show that the \tp introduces negligible
 processing delay; less than \SI{500}{ns} of additional delay for intra-domain zone transfer
-and approximately $2.5 \sim 3 \mu$s for inter-domain zone transfer traffic. We further 
-provide in-depth analyses for security and practical considerations.
+and approximately $2.5 \sim 3 \mu$s for inter-domain zone transfer traffic. We further
+provide in-depth security and practicality analyses.
 
 % contributions
-% > introduce a new security architecture that enables secure, flexible, practical zoning
-% > network filtering at the edge of network
-% > provide poc implementation and evaluation
-% > provide practical considerations
 The main contributions of this paper are the following:
-
 \begin{itemize}
-	\item We introduce \name, a new security architecture that enables secure, flexible 
-	and viable network zoning and inter-zone communication for large enterprise 
-	networks.
-	% \claude{while requiring little operational resources}.
-	\item We introduce the new notion of an inter-domain transit zone that dramatically 
-	simplifies the current hierarchical zone structure, enabling flexible and cost-efficient 
-	network zone management. 
+	\item We introduce \name, a new security architecture that enables secure, flexible
+	      and viable network zoning and inter-zone communication for large enterprise
+	      networks.
+	\item We introduce the new notion of an inter-domain transit zone that dramatically
+	      simplifies the current hierarchical zone structure, enabling flexible and cost-efficient
+	      network zone management.
 	\item \name enables network filtering at the edge of the network, such that it suppresses
-	network overhead in terms of wasted network bandwidth and packet processing time.
-	\item We implement \name as an opensource project. %that allows anyone to try it out.
-	% \item We provide thorough evaluation and analysis including practical considerations.
+	      network overhead in terms of wasted network bandwidth and packet processing time.
+	\item We implement \name as an opensource project.
 \end{itemize}
 
