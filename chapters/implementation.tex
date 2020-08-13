@@ -35,15 +35,86 @@ traffic over WAN---the underlying inter-domain routing protocol is not relevant 
 functional aspects of \tp meets with what SIG provides. To be integrated with SIG, \tp
 mediates between the UNIX socket and SIG socket, and performs zone transfer authorization
 and verification for all incoming/outgoing packets.
-Figure~\ref{fig:tp} illustrates
-the implementation details of the modularized \tp design that consists of three main modules: i) core module, ii) transfer module, and iii) authentication module.
-Here we describe the three main modules of \tp: i) core module, ii) transfer module, and iii) authentication module.
+
+\subsection{Modular Design}
+\label{ssec:mod_design}
+
+\paragraph{Packet Format}
+In order to make \tps modular, all modules must agree on a common packet format on which they
+operate. The packet contains the raw IP packet read from the interface, as well as metadata
+that is required by the modules to perform their task. Modules can read and write all fields of the
+packet. In particular they can modify the raw IP packet.
+Listing~\ref{lst:packet} shows the packet format.
+
+\begin{minipage}{\linewidth}
+	\begin{lstlisting}[
+		basicstyle=\footnotesize, language=golang,
+		caption={\textit{The abstract packet format passed between the modules of a \tp.}},
+		label=lst:packet,
+	]
+	// Packet contains a raw IP packet with additional meta data
+	type Packet struct {
+		Ingress		bool
+		SrcHost 	net.IP
+		DstHost 	net.IP
+		RemoteTP	string
+		DstZone		uint32
+		RawPacket 	common.RawBytes
+	}
+	\end{lstlisting}
+\end{minipage}
+
+The \code{Ingress}field identifies a packet as either an ingress packet,
+coming from the WAN, or an egress packet
+that originated in the local network. \code{SrcHost} and \code{DstHost} reflect
+the source and destination IP addresses of the packet. \code{RemoteTP} designates
+the remote \tp. For an ingress packet that is the source \tp from which the packet
+was received, for an egress packet it is the \tp to which the packet needs to be
+forwarded to. \code{DstZone} is the Zone ID of the zone to which \code{DstHost}
+belongs.
+
+\paragraph{Module Interface}
+A module is then simply defined as a type that handles this packet format.
+More precisely, a module implements a very simple \code{Module} interface.
+
+\begin{minipage}{\linewidth}
+	\begin{lstlisting}[
+		basicstyle=\footnotesize, language=golang,
+		caption={\textit{The interface all modules must implement.}},
+		label=lst:module,
+	]
+	// Module is a single element in the pipeline
+	// that handles IP packets.
+	// Modules must be thread safe.
+	type Module interface {
+		Handle(Packet) (Packet, error)
+	}
+	\end{lstlisting}
+\end{minipage}
+
+As can be seen in Listing~\ref{lst:module}, modules call \code{Handle} to process packets
+of the aforementioned format and then return a new, potentially modified, packet and an
+error. The error is \code{nil} if the handling of the packet was successful.
+
+\paragraph{Handler Chains}
+\label{ssec:chains}
+
+\cmnt{TODO}
+
+\subsection{Implemented Modules}
+\label{ssec:modules}
+
+In this section we describe the main modules that have been implemented to satisfy
+the protocol described in \S\ref{sec:protocol}. Figure~\ref{fig:tp} illustrates
+the implementation details of the modularized \tp design that consists of the three
+main modules: i) core module, ii) transfer module, and iii) authentication module.
 
 \paragraph{Core Module}
 The core module is the main loop of \tp. It reads packets from the UNIX socket and
 redistributes them to the corresponding interfaces. More precisely, when receiving packets
-from the internal network, it retrieves metadata (further illustrated in
-Appendix~\ref{apdx:meta}) from the raw packet, and hands over to the transfer module.
+from the internal network, it retrieves metadata such as source and destination
+IP addresses (as illustrated in
+\S\ref{ssec:mod_design}) from the raw packet and hands over to the transfer module.
 If the zone transfer is authorized ($return=1$),
 the packet is then either forwarded back to the internal network or, in case the given destination is in a remote zone, once again handed over to the authentication module to be prepared for secure transmission.
 For packets coming from the external network, \tp first calls the authentication module for
@@ -97,14 +168,14 @@ type KeyManager interface {
 }
 \end{lstlisting}
 
-\paragraph{Database}
-The \tp's database consists of three tables: \textit{Zone Table}, \textit{Zone Transfer
-	Table}, and \textit{Key Table}. The zone table is used to map hosts to their corresponding
-zones. For a fast table lookup, we leverage Radix Trees (also known as a trie or compact prefix
-tree), \fnurl{cidranger}{https://github.com/yl2chen/cidranger} in particular. The zone transfer table is a database
-in which the zone transfer rules are stored. The two tables are populated with the information
-acquired from the controller. The key table is where the shared first-level keys are
-accumulated.
+\cmnt{\paragraph{Database}
+	The \tp's database consists of three tables: \textit{Zone Table}, \textit{Zone Transfer
+		Table}, and \textit{Key Table}. The zone table is used to map hosts to their corresponding
+	zones. For a fast table lookup, we leverage Radix Trees (also known as a trie or compact prefix
+	tree), \fnurl{cidranger}{https://github.com/yl2chen/cidranger} in particular. The zone transfer table is a database
+	in which the zone transfer rules are stored. The two tables are populated with the information
+	acquired from the controller. The key table is where the shared first-level keys are
+	accumulated.}
 
 \section{Controller}
 \label{sec:controller}
@@ -115,17 +186,61 @@ zone information and transfer policies. The controller offers an API which allow
 
 \paragraph{APIs}
 The endpoints of interest are:
+
 \begin{enumerate}
-    \item \code{/api/get-subnets}
-    \item \code{/api/get-transfers}
+	\item \code{/api/get-subnets}
+	\item \code{/api/get-transfers}
 \end{enumerate}
-Using these endpoints \tps fetch IP subnet and zone transfer rules. Important to note is that
-the controller only hands out the subset of the full set of rules which is required for the
-requesting \tp to be operational. This minimizes the size of data transmissions and also
-improves security by not disclosing the full network view to every \tp. For every call to the
-API the controller first verifies the authenticity of the caller before the request is forwarded
-to the corresponding handler. The handlers then load the requested data from the database and
-send it to the caller as JSON-formatted bytes.
+
+Using these endpoints \tps fetch IP subnet and zone transfer rules. Important
+to note is that the controller only hands out the subset of the full set of rules
+which is required for the requesting \tp to be operational. This minimizes the size
+of data transmissions and also improves security by not disclosing the full network
+view to every \tp. For every call to the API the controller first verifies the
+authenticity of the caller before the request is forwarded to the corresponding
+handler. The handlers then load the requested data from the database and send it to
+the caller as JSON-formatted bytes.
+
+\begin{minipage}{\linewidth}
+	\begin{lstlisting}[
+		basicstyle=\footnotesize, language=golang,
+		caption={\textit{Abstraction layer function that returns the relevant subnet
+		information for a given \tp.}},
+		label=lst:subnets,
+	]
+	// GetSubnets returns all subnets stored in the backend
+	// relevant for ZTP with address tpAddr.
+	func (b *Backend) GetSubnets(tpAddr string)
+		([]*types.Subnet, error) {
+	
+		stmt := `WITH tp_zones
+		AS (SELECT DISTINCT zone 
+			FROM   subnets 
+			WHERE  tp_address = ?), 
+		possible_dests 
+		AS (SELECT DISTINCT dest
+			FROM   transfers 
+			WHERE  src IN tp_zones AND dest NOT IN tp_zones), 
+		possible_src 
+		AS (SELECT DISTINCT src
+			FROM  transfers 
+			WHERE  dest IN tp_zones AND src NOT IN tp_zones) 
+		SELECT net_ip, net_mask, zone, tp_address 
+		FROM   subnets 
+		WHERE  zone IN tp_zones OR zone IN possible_dests
+		   OR zone IN possible_src`
+	
+		rows, err := b.db.Query(stmt, tpAddr)
+		if err != nil {
+			return nil, err
+		}
+	
+		// parts of code omitted
+
+		return nets, nil
+	}
+	\end{lstlisting}
+\end{minipage}
 
 \paragraph{Database}
 The database consists of four tables (Zones, Sites, Subnets, Transfers), each describing one of
@@ -135,7 +250,7 @@ written in golang allows the controller to interface with the database using hig
 The abstraction layer makes use of transactional queries to ensure consistency even in the event
 of errors. Furthermore, the abstraction uses prepared statements for insertions, deletions and
 retrievals of data. This protects against SQL-injections and improves the speed of queries.
-
+An example function of the abstraction layer is depicted in Listing~\ref{lst:subnets}.
 
 \section{Authentication Token}
 \label{sec:token}
@@ -184,7 +299,7 @@ a \code{key} and then returns the decrypted \code{packet} together with the toke
 and an error. The error is again \code{nil} if the
 call to the function was successful.
 
-\begin{minipage}{\linewidth} % minipage makes the listing not split
+\begin{minipage}{\linewidth} % minipage makes the listing unsplittable
 	\begin{lstlisting}[
 		basicstyle=\footnotesize, language=golang,
 		label={lst:transformer},
