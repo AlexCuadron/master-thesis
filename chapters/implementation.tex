@@ -18,15 +18,6 @@ software-based gateway working with SCION are available, thus enabling rapid pro
 \section{Translation Point}
 \label{sec:tp}
 
-\begin{figure}[htb]
-	\begin{center}
-		\includegraphics[width=0.9\textwidth]{tp.eps}
-	\end{center}
-	\caption{An overview of the modularized \tp implementation. Major usecases are also
-		indicated with colored arrows.}
-	\label{fig:tp}
-\end{figure}
-
 To implement a prototype of \tp, we extend the \fnurl{SCION-IP Gateway (SIG)}{https://github.com/scionproto/scion}.
 The main functionality of SIG is to encapsulate legacy IP packets into SCION packets and
 vice versa. In this context, a SIG acts as a gateway between an internal (legacy) network
@@ -49,7 +40,7 @@ Listing~\ref{lst:packet} shows the packet format.
 \begin{minipage}{\linewidth}
 	\begin{lstlisting}[
 		basicstyle=\footnotesize, language=golang,
-		caption={\textit{The abstract packet format passed between the modules of a \tp.}},
+		caption={The abstract packet format passed between the modules of a \tp.},
 		label=lst:packet,
 	]
 	// Packet contains a raw IP packet with additional meta data
@@ -80,7 +71,7 @@ More precisely, a module implements a very simple \code{Module} interface.
 \begin{minipage}{\linewidth}
 	\begin{lstlisting}[
 		basicstyle=\footnotesize, language=golang,
-		caption={\textit{The interface all modules must implement.}},
+		caption={The interface all modules must implement.},
 		label=lst:module,
 	]
 	// Module is a single element in the pipeline
@@ -99,10 +90,21 @@ error. The error is \code{nil} if the handling of the packet was successful.
 \paragraph{Handler Chains}
 \label{ssec:chains}
 
-\cmnt{TODO}
+Modules can be linked in a specific order to create a chain of handlers.
+These handler chains can then be registered for a specific use case. In particular, it is possible
+to create different handler chains for intra-domain and inter-domain zone transfers.
 
 \subsection{Implemented Modules}
 \label{ssec:modules}
+
+\begin{figure}[htb]
+	\begin{center}
+		\includegraphics[width=0.9\textwidth]{tp.eps}
+	\end{center}
+	\caption{An overview of the modularized \tp implementation. Major use cases are
+	indicated with colored arrows.}
+	\label{fig:tp}
+\end{figure}
 
 In this section we describe the main modules that have been implemented to satisfy
 the protocol described in \S\ref{sec:protocol}. Figure~\ref{fig:tp} illustrates
@@ -116,8 +118,10 @@ from the internal network, it retrieves metadata such as source and destination
 IP addresses (as illustrated in
 \S\ref{ssec:mod_design}) from the raw packet and hands over to the transfer module.
 If the zone transfer is authorized ($return=1$),
-the packet is then either forwarded back to the internal network or, in case the given destination is in a remote zone, once again handed over to the authentication module to be prepared for secure transmission.
-For packets coming from the external network, \tp first calls the authentication module for
+the packet is then either forwarded back to the internal network or, in case the given destination
+is in a remote zone,
+once again handed over to the authentication module to be prepared for secure transmission.
+For packets coming from the external network, a \tp first calls the authentication module for
 verification of the conveyed authentication token. Packets with invalid tokens are simply discarded.
 
 \paragraph{Transfer Module}
@@ -137,17 +141,50 @@ We implemented the transfer module to support different drop-in options using AP
 	      \cmnt{should we discuss this further in the discussion section?}
 \end{itemize}
 
-\paragraph{Authentication Module}
-For inter-domain packet transmissions, the authentication module issues an
-authentication token for the packet. It (ideally) caches the first-level keys prefetched
-from other \tps and derive a second-level key to generate the authentication token.
-Inversely, for packets from other \tps, it derives the corresponding 2nd-level key
-and verifies the delivered authentication token. \cmnt{explain implementation in more detail}
+While the No-Op and Firewall options are both trivial to implement (the first simply accepts all
+packets while the latter forwards packets to the firewall instance), it is crucial for the Standard
+option to efficiently match IP addresses against a list of trusted IP subnets. In our implementation
+we leverage a compressed trie data structure (also radix trie or compact prefix tree) to check if a
+given pair of source and destination IP addresses are allowed to exchange data. Specifically,
+we use the open source \fnurl{cidranger}{https://github.com/yl2chen/cidranger} library. Since the
+lookup time of the trie is only dependant on the depth of the trie, which is fixed (32 bits for IPv4 and 128
+bits for IPv6), the lookup time is constant with respect to the number of stored subnets. This
+ensures fast packet processing even if a \tp has a large number of rules configured.
+Figure~\ref{fig:trie} shows a simplified example of how a trie stores IP subnets.
 
-\begin{lstlisting}[
+\begin{figure}[htb]
+	\begin{center}
+		\includegraphics[width=0.9\textwidth]{trie.png}
+	\end{center}
+	\caption{A partial trie storing the subnets 128.0.0.0/3, 160.0.0.0/4, and 224.0.0.0/4.}
+	\label{fig:trie}
+\end{figure}
+
+While the trie stores all configured IP subnets known to the \tp, another data structure is required
+to store the acutal zone transfer rules, stating which zones, and by extension which subnets, are
+allowed to communicate with each other (recall that a subnet corresponds to exactly one zone). For this,
+we use a fast in-memory key-value store which maps to a given zone all other zones from which it
+accepts traffic.
+
+\paragraph{Authentication Module}
+For inter-domain packet transmissions, the authentication module issues
+authentication tokens (further discussed in \S\ref{sec:token}) for outgoing packets.
+It (ideally) caches the first-level keys prefetched
+from other \tps and derives a second-level key to generate the authentication token. Inversely, for
+packets incoming from other \tps, it derives the corresponding 2nd-level key
+and verifies the attached authentication token. The authentication module is in itself modular by
+relying on an interface to fetch and derive keys. The key management logic (which is
+responsible for exchanging, caching, and evicting expired keys) is completely
+decoupled from the rest of the module. This has the advantage that the key exchange protocol can be changed
+independently, without a need to change other parts of the module. The interface that all
+implementations of such a key manager must satisfy is outlined in Listing~\ref{lst:keyman}.
+
+\begin{minipage}{\linewidth}
+	\begin{lstlisting}[
 	basicstyle=\footnotesize, language=golang,
-	caption={\textit{The KeyManager interface used to by the authentication module to fetch and
-	derive keys.}},
+	caption={The KeyManager interface used to by the authentication module to fetch and
+	derive keys.},
+	label=lst:keyman,
 ]
 // KeyManager is a thread-safe key store managing L0 and L1 keys
 type KeyManager interface {
@@ -166,32 +203,24 @@ type KeyManager interface {
 	// incoming traffic.
 	DeriveL2Key(remote string, zone uint32) ([]byte, error)
 }
-\end{lstlisting}
-
-\cmnt{\paragraph{Database}
-	The \tp's database consists of three tables: \textit{Zone Table}, \textit{Zone Transfer
-		Table}, and \textit{Key Table}. The zone table is used to map hosts to their corresponding
-	zones. For a fast table lookup, we leverage Radix Trees (also known as a trie or compact prefix
-	tree), \fnurl{cidranger}{https://github.com/yl2chen/cidranger} in particular. The zone transfer table is a database
-	in which the zone transfer rules are stored. The two tables are populated with the information
-	acquired from the controller. The key table is where the shared first-level keys are
-	accumulated.}
-
+	\end{lstlisting}
+\end{minipage}
+		
 \section{Controller}
 \label{sec:controller}
-
+	
 We implemented the controller as a Web server written in golang with an SQLite database storing the
 zone information and transfer policies. The controller offers an API which allows
 \tps to fetch zoning information via HTTPS GET requests.
-
+	
 \paragraph{APIs}
 The endpoints of interest are:
-
+	
 \begin{enumerate}
 	\item \code{/api/get-subnets}
 	\item \code{/api/get-transfers}
 \end{enumerate}
-
+	
 Using these endpoints \tps fetch IP subnet and zone transfer rules. Important
 to note is that the controller only hands out the subset of the full set of rules
 which is required for the requesting \tp to be operational. This minimizes the size
@@ -200,61 +229,51 @@ view to every \tp. For every call to the API the controller first verifies the
 authenticity of the caller before the request is forwarded to the corresponding
 handler. The handlers then load the requested data from the database and send it to
 the caller as JSON-formatted bytes.
-
+	
 \begin{minipage}{\linewidth}
 	\begin{lstlisting}[
 		basicstyle=\footnotesize, language=golang,
-		caption={\textit{Abstraction layer function that returns the relevant subnet
-		information for a given \tp.}},
+		caption={Abstraction layer function that inserts a zone transfer rules into the database.},
 		label=lst:subnets,
 	]
-	// GetSubnets returns all subnets stored in the backend
-	// relevant for ZTP with address tpAddr.
-	func (b *Backend) GetSubnets(tpAddr string)
-		([]*types.Subnet, error) {
-	
-		stmt := `WITH tp_zones
-		AS (SELECT DISTINCT zone 
-			FROM   subnets 
-			WHERE  tp_address = ?), 
-		possible_dests 
-		AS (SELECT DISTINCT dest
-			FROM   transfers 
-			WHERE  src IN tp_zones AND dest NOT IN tp_zones), 
-		possible_src 
-		AS (SELECT DISTINCT src
-			FROM  transfers 
-			WHERE  dest IN tp_zones AND src NOT IN tp_zones) 
-		SELECT net_ip, net_mask, zone, tp_address 
-		FROM   subnets 
-		WHERE  zone IN tp_zones OR zone IN possible_dests
-		   OR zone IN possible_src`
-	
-		rows, err := b.db.Query(stmt, tpAddr)
-		if err != nil {
-			return nil, err
-		}
-	
-		// parts of code omitted
+// InsertTransfers inserts premitted zone transfers into the backend
+func (b *Backend) InsertTransfers(transfers map[int][]int) error {
+	stmt := `INSERT INTO Transfers (src, dest) VALUES (?, ?)`
 
-		return nets, nil
+	// do insertion in a transaction to ensure atomicity
+	tx, err := b.db.BeginTx(context.Background(), nil)
+	if err != nil {
+		return err
 	}
+
+	for src, dests := range transfers {
+		for _, dest := range dests {
+			_, err = tx.Exec(stmt, src, dest)
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+	}
+	tx.Commit()
+	return nil
+}
 	\end{lstlisting}
 \end{minipage}
-
+	
 \paragraph{Database}
 The database consists of four tables (Zones, Sites, Subnets, Transfers), each describing one of
 the core elements of the architecture.
-The database schema is listed in the Appendix~\ref{apdx:controllerdb}. An abstraction layer
+The database schema is listed in Appendix~\ref{apdx:controllerdb}. An abstraction layer
 written in golang allows the controller to interface with the database using high-level calls.
 The abstraction layer makes use of transactional queries to ensure consistency even in the event
 of errors. Furthermore, the abstraction uses prepared statements for insertions, deletions and
 retrievals of data. This protects against SQL-injections and improves the speed of queries.
 An example function of the abstraction layer is depicted in Listing~\ref{lst:subnets}.
-
+	
 \section{Authentication Token}
 \label{sec:token}
-
+	
 \begin{figure}[htb]
 	\begin{center}
 		\includegraphics[width=.9\textwidth]{header.eps}
@@ -262,13 +281,13 @@ An example function of the abstraction layer is depicted in Listing~\ref{lst:sub
 	\caption{\name packet format for secure tunneling.}
 	\label{fig:header}
 \end{figure}
-
+	
 The \name packet format follows the IP tunneling conventions of encapsulating the original
 packet with a new outer IP header that indicates the two tunnel endpoints as the new source
 and destination. The original packet is encrypted and then authenticated along with the new
 packet header fields. Figure~\ref{fig:header} shows the detailed packet structure and coverages
 of the confidentiality and integrity guarantee.
-
+	
 The authentication token starts with one byte of reserved space for a \textit{Type} field. While
 currently unused this will be useful in the future for distinguishing different variations of
 the authentication token. \textit{ZoneID} depicts the 3 byte long zone identifier of the
@@ -276,18 +295,18 @@ destination zone. It is used by the receiving \tp to derive the correct key for 
 and decryption. The next 4 bytes are occupied by a \textit{TimeStamp} which is added by the
 sending \tp. It is the Unix time at the point of sending the packet. The receiving \tp uses this
 timestamp to reject replayed packets. The timestamp is followed by a \textit{Nonce} of 12 bytes.
-
+	
 The nonce as well as the previous three token fields and the data to be encrypted (\textit{EIP})
 serve as input to a \textit{Galois/Counter Mode} (GCM) algorithm with an underlying
 \textit{AES-128} block cipher as cryptographic primitive. This mode of operation is widely
 adopted for its performance as well as the capability to do \textit{authenticated encryption
-	with associated data} (AEAD). Here it provides authenticity over the header fields
+with associated data} (AEAD). Here it provides authenticity over the header fields
 (\textit{Type}, \textit{ZoneID}, \textit{TimeStamp}) and the data in \textit{EIP} while
 \textit{EIP} additionally also gets encrypted.
-
+	
 The 16 byte \textit{MAC} generated by GCM is the last field in the authentication token. Both,
 the nonce and the MAC sizes follow the guidelines recommended by NIST SP 800-38D \cite{nistgcm}.
-
+	
 Listing~\ref{lst:transformer} shows the interface that is used by the authentication module
 to create and attach an authentication token to an IP packet. Of particular interest are the
 functions \code{ToIR} and \code{FromIR}. \code{ToIR} takes the raw
@@ -298,13 +317,13 @@ Inversely, \code{FromIR} receives an encrypted packet with attached token (\code
 a \code{key} and then returns the decrypted \code{packet} together with the token (\code{additionalData})
 and an error. The error is again \code{nil} if the
 call to the function was successful.
-
+	
 \begin{minipage}{\linewidth} % minipage makes the listing unsplittable
 	\begin{lstlisting}[
 		basicstyle=\footnotesize, language=golang,
 		label={lst:transformer},
-		caption={\textit{The Transformer interface used by the authentication module 
-		to create and verify authentication tokens.}},
+		caption={The Transformer interface used by the authentication module 
+		to create and verify authentication tokens.},
 	]
 	// Transformer transforms IP packets to and from intermediate
 	// representation
@@ -324,3 +343,6 @@ call to the function was successful.
 	}
 	\end{lstlisting}
 \end{minipage}
+
+If the token format needs to be changed, only the implementation of the \code{Transformer} interface
+needs to be modified. The rest of the module can remain unchanged.

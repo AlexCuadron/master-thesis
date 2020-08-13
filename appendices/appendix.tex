@@ -1,36 +1,8 @@
-\chapter{Packet Metadata}
-\label{apdx:meta}
-
-%\section{Packet Metadata}
-%\label{apdx:metadata}
-
-\begin{lstlisting}[
-	basicstyle=\footnotesize, language=golang,
-]
-type Packet struct {
-	Ingress		bool
-	SrcHost 	net.IP
-	DstHost 	net.IP
-	RemoteTP	string
-	DstZone		uint32
-	RawPacket 	common.RawBytes
-}
-\end{lstlisting}
-
-The packet metadata is the abstract object passed between modules, describing an IP packet.
-It accumulates information about the raw IP packet (\texttt{RawPacket}). The \texttt{Ingress}
-field identifies a packet as either an ingress packet, coming from the WAN, or an egress packet
-that originated in the local network. \texttt{SrcHost} and \texttt{DstHost} reflect the source
-and destination IP addresses of the packet. \texttt{RemoteTP} designates the remote \tp. For an
-ingress packet that is the source \tp from which the packet was received, for an egress packet
-it is the \tp to which the packet needs to be forwarded to. \texttt{DstZone} is the Zone ID of
-the zone to which \texttt{DstHost} belongs.
-
 \chapter{Controller Database}
 \label{apdx:controllerdb}
 
 
-\begin{lstlisting}[language=sql, basicstyle=\tiny, %or \small or \footnotesize etc.
+\begin{lstlisting}[language=sql, basicstyle=\footnotesize,
 ]
 CREATE TABLE Zones(
 id INTEGER NOT NULL,
@@ -47,11 +19,12 @@ PRIMARY KEY(tp_address)
 CREATE TABLE Subnets(
 net_ip BLOB NOT NULL,
 net_mask BLOB NOT NULL,
-zone INTEGER NOT NULL,
+zoneID INTEGER NOT NULL,
 tp_address TEXT NOT NULL,
 PRIMARY KEY (net_ip, net_mask),
-FOREIGN KEY (zone) REFERENCES Zones(id) ON DELETE CASCADE,
-FOREIGN KEY (tp_address) REFERENCES Sites(tp_address) ON DELETE CASCADE
+FOREIGN KEY (zoneID) REFERENCES Zones(id) ON DELETE CASCADE,
+FOREIGN KEY (tp_address) REFERENCES Sites(tp_address)
+	ON DELETE CASCADE
 );
 	  
 CREATE TABLE Transfers(
