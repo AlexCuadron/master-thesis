@@ -14,18 +14,18 @@ we leverage the standard benchmark library \texttt{testing} officially supported
 The benchmarks are conducted on commodity machines equipped with an Intel i7 \SI{2.9}{GHz}
 CPU, \SI{16}{GB} memory, and a \SI{1}{GbE} NIC.
 
-\begin{table}[htb]%\scriptsize
+\begin{table}[htb]
 	\begin{minipage}{.47\linewidth}
 		\caption{Benchmark results for the transfer policy lookup (ns).}
 		\label{tab:authorization}
-		\begin{tabularx}{1\linewidth}{X|XX}
+		\begin{tabularx}{1\linewidth}{X|XXXX}
 			\toprule
-			\# of Policies & Cache Hit & Cache Miss \\
+			\# of Policies & No Miss & Src IP Miss & Dest IP Miss & Policy Miss \\
 			\midrule
-			100            & 307       & 236        \\
-			\SI{1}{K}      & 405       & 264        \\
-			\SI{10}{K}     & 423       & 293        \\
-			\SI{100}{K}    & 497       & 375        \\
+			100            & 312     & 100         & 235          & 313         \\
+			\SI{1}{K}      & 399     & 105         & 264          & 394         \\
+			\SI{10}{K}     & 381     & 99          & 262          & 386         \\
+			\SI{100}{K}    & 448     & 101         & 290          & 435         \\
 			\bottomrule
 		\end{tabularx}
 	\end{minipage}\hspace{2em}
@@ -75,6 +75,7 @@ CPU, \SI{16}{GB} memory, and a \SI{1}{GbE} NIC.
 
 \paragraph{Authorization}
 % The \tp's transfer module performs zone transfer authorization for every incoming packets.
+\cmnt{adapt text to reflect new table}
 From a technical perspective, the zone transfer authorization consists of two tree searches followed
 by a database lookup;
 upon receiving the packet metadata from the core module, the transfer module first looks
@@ -119,15 +120,15 @@ because second-level keys are directly derived from first-level keys.
 The results indicate that the processing time for a key derivation is less than 1 $\mu$s
 even in very large networks with \SI{100}{K} branch sites, which is negligible considering
 network latency in today's Internet.
-% ---$\Delta t = \delta t_{Init} + \delta t_{1} + \delta t_{2}$.
-
 
 \paragraph{Authentication}
 The additional processing time for packet encryption and decryption is shown in
 Table~\ref{tab:authentication}. In summary, it requires approximately 1.5 to 2.5 $\mu$s to
 authenticate various sizes of packets. We note that the processing overhead occurs for the majority
 of tunneling technologies that provide confidentiality for data transmission. The processing
-time can be minimized with implementations using the Data Plane Development Kit (DPDK)~\cite{dpdk} or by leveraging hardware dedicated to cryptographic operations.
+time can be minimized with implementations using the Data Plane Development Kit
+(DPDK)~\cite{dpdk} or by leveraging hardware dedicated to cryptographic
+operations.
 
 \section{Network Benchmarks}
 \label{sec:networkbenchmark}
@@ -135,7 +136,7 @@ time can be minimized with implementations using the Data Plane Development Kit 
 \begin{figure}[htb]
 	\begin{minipage}{.47\linewidth}
 		\centering
-		\includegraphics[width=\linewidth]{intra_domain.eps}
+		\includegraphics[width=\linewidth]{intra.eps}
 		\caption{Processing time for intra-domain zone transfer.}
 		\label{fig:intra}
 	\end{minipage}\hspace{1em}
