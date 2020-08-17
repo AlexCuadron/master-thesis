@@ -4,6 +4,16 @@
 % With the prototype implementation, we conduct extensive evaluation including 
 % system/network-wide benchmarks. 
 
+\section{System Benchmarks}
+\label{sec:systembenchmark}
+
+% \paragraph{Experimental Setup}
+We first conduct microbenchmark tests to evaluate the performance of \tp including the key
+derivation, packet authentication, and authorization. For scrutinize and reproducible evaluation,
+we leverage the standard benchmark library \texttt{testing} officially supported by golang.
+The benchmarks are conducted on commodity machines equipped with an Intel i7 \SI{2.9}{GHz}
+CPU, \SI{16}{GB} memory, and a \SI{1}{GbE} NIC.
+
 \begin{table}[htb]%\scriptsize
 	\begin{minipage}{.47\linewidth}
 		\caption{Benchmark results for the transfer policy lookup (ns).}
@@ -18,22 +28,35 @@
 			\SI{100}{K}    & 497       & 375        \\
 			\bottomrule
 		\end{tabularx}
-	\end{minipage}
+	\end{minipage}\hspace{2em}
 	\begin{minipage}{.47\linewidth}
-		\caption{Key derivation times for different network sizes (ns).}
-		\label{tab:derivation}
+		\caption{Sender-side L1 key lookup and L2 key derivation times for different network sizes (ns).}
+		\label{tab:derivation_send}
 		\begin{tabularx}{1\linewidth}{X|XX}
 			\toprule
 			\# of Branches & 1st-level Key & 2nd-level Key \\
 			\midrule
-			% 10		& 189 	& 122 \\	% 841-530-189=122
-			100            & 199           & 116           \\	% 845-530-199=116
-			\SI{1}{K}      & 211           & 136           \\	% 877-530-211=136
-			\SI{10}{K}     & 238           & 201           \\	% 969-530-238=201
-			\SI{100}{K}    & 427           & 154           \\	% 1111-530-427=154
+			100            & 154           & 88            \\	% 618-530=88
+			\SI{1}{K}      & 155           & 97            \\	% 627-530=97
+			\SI{10}{K}     & 161           & 175           \\	% 705-530=175
+			\SI{100}{K}    & 157           & 111           \\	% 641-530=111
 			\bottomrule
 		\end{tabularx}
 	\end{minipage}\vspace{2em}
+	\begin{minipage}{.47\linewidth}
+		\caption{Receiver-side L1/L2 key derivation times for different network sizes (ns).}
+		\label{tab:derivation_rec}
+		\begin{tabularx}{1\linewidth}{X|XX}
+			\toprule
+			\# of Branches & 1st-level Key & 2nd-level Key \\
+			\midrule
+			100            & 188           & 104           \\	% 508-404=104
+			\SI{1}{K}      & 188           & 104           \\	% 508-404=104
+			\SI{10}{K}     & 197           & 103           \\	% 507-404=103
+			\SI{100}{K}    & 188           & 104           \\	% 508-404=104
+			\bottomrule
+		\end{tabularx}
+	\end{minipage}\hspace{2em}
 	\begin{minipage}{.47\linewidth}
 		\caption{Processing times for the encryption/decryption for different packet sizes (ns).}
 		\label{tab:authentication}
@@ -50,7 +73,66 @@
 	\end{minipage}
 \end{table}
 
-\begin{figure}
+\paragraph{Authorization}
+% The \tp's transfer module performs zone transfer authorization for every incoming packets.
+From a technical perspective, the zone transfer authorization consists of two tree searches followed
+by a database lookup;
+upon receiving the packet metadata from the core module, the transfer module first looks
+up the corresponding zone identifiers for the source and destination addresses, and then
+compares them to the zone transfer policies. The authorization performance is therefore
+dependent on the lookup time of the trees and the policy database.
+
+Table~\ref{tab:authorization} shows
+the benchmark results of database lookups for different numbers of policies.
+Note that each benchmark ran a couple million iterations and kept the mean value.
+The authorization check takes approximately 300 to \SI{500}{ns} per packet, which is a
+notable result considering: i) a single lookup consists of two tree searches and a database lookup, ii) the result
+is from a high-level language implementation, and iii) the test set scales 1000 times.
+As expected, a lookup failure is commonly 24 to 31~\% faster than a successful lookup.
+This implies that abnormal packets with invalid zone transfer requests can be quickly
+discarded.
+
+
+\paragraph{Key Derivation}
+% When a \tp handles an inter-domain zone transfer packet, the \tp need to derive a correct 
+% key for the authentication. As we described in~\S\ref{ssec:keymanagement}, the key derivation
+% comprise with two steps: fetch the first-level key from the cache, and dynamically derive the 
+% second-level key from the first-level key. 
+% To securely forward a zone transfer packet over the public Internet, a \tp first 
+We investigate the key derivation performance. Recall that the key derivation proceeds
+differently for sender and receiver. A receiver is capable of directly deriving the
+second-level key from the local secret (Eq.~\ref{eq:1stkey} \& Eq.~\ref{eq:2ndkey}),
+whereas a sender needs to fetch the first-level key from the key cache before it can derive the second-level key.
+From a scalability perspective, we vary the number of branches (a \tp for each) by increasing the number of stored
+first-level keys up to \SI{100}{K}. Table~\ref{tab:derivation_send} depicts the average time for sender-side key derivation
+measured by a benchmark running more than a million iterations. Table~\ref{tab:derivation_rec} shows the same results for
+receiver-side key derivation. As can be seen, looking up the first-level key from cache is slightly faster than
+deriving the first-level key from the local secret. This is expected when using a high-level language like golang.
+Much faster key derivations are possible when using a state-of-the-art implementation \cite{rot2020piskes}.
+On the other hand, the second-level key derivation takes roughly the same amount of time for sender- and receiver-side.
+This is to be exptected as this derivation step is identical in both cases.
+
+We observe that the lookup time for the first-level key is independent of the size of the key
+table, taking between \SI{154}{ns} and \SI{161}{ns}. In addition, the size of the key table is
+also irrelevant for the second-level key derivation
+because second-level keys are directly derived from first-level keys.
+The results indicate that the processing time for a key derivation is less than 1 $\mu$s
+even in very large networks with \SI{100}{K} branch sites, which is negligible considering
+network latency in today's Internet.
+% ---$\Delta t = \delta t_{Init} + \delta t_{1} + \delta t_{2}$.
+
+
+\paragraph{Authentication}
+The additional processing time for packet encryption and decryption is shown in
+Table~\ref{tab:authentication}. In summary, it requires approximately 1.5 to 2.5 $\mu$s to
+authenticate various sizes of packets. We note that the processing overhead occurs for the majority
+of tunneling technologies that provide confidentiality for data transmission. The processing
+time can be minimized with implementations using the Data Plane Development Kit (DPDK)~\cite{dpdk} or by leveraging hardware dedicated to cryptographic operations.
+
+\section{Network Benchmarks}
+\label{sec:networkbenchmark}
+
+\begin{figure}[htb]
 	\begin{minipage}{.47\linewidth}
 		\centering
 		\includegraphics[width=\linewidth]{intra_domain.eps}
@@ -88,95 +170,6 @@
 		\label{fig:throughput}
 	\end{minipage}
 \end{figure}
-
-\section{System Benchmarks}
-\label{sec:systembenchmark}
-
-% \paragraph{Experimental Setup}
-We first conduct microbenchmark tests to evaluate the performance of our \tp, including the
-derivation, packet authentication, and authorization. For a robust and reproducible evaluation,
-we leverage the standard benchmarking library \texttt{testing} officially supported by golang.
-The benchmarks are conducted on commodity machines equipped with an Intel i7 \SI{2.9}{GHz}
-CPU, \SI{16}{GB} memory, and a \SI{1}{GbE} NIC.
-
-\paragraph{Authorization}
-% The \tp's transfer module performs zone transfer authorization for every incoming packets.
-From a technical perspective, the zone transfer authorization consists of two tree searches followed
-by a database lookup;
-upon receiving the packet metadata from the core module, the transfer module first looks
-up the corresponding zone identifiers for the source and destination addresses, and then
-compares them to the zone transfer policies. The authorization performance is therefore
-dependent on the lookup time of the trees and the policy database.
-
-Table~\ref{tab:authorization} shows
-the benchmark results of database lookups for different numbers of policies.
-Note that each benchmark ran a couple million iterations and kept the mean value.
-The authorization check takes approximately 300 to \SI{500}{ns} per packet, which is a
-notable result considering: i) a single lookup consists of two tree searches and a database lookup, ii) the result
-is from a high-level language implementation, and iii) the test set scales 1000 times.
-As expected, a lookup failure is commonly 24 to 31~\% faster than a successful lookup.
-This implies that abnormal packets with invalid zone transfer requests can be quickly
-discarded.
-
-
-\paragraph{Key Derivation}
-% When a \tp handles an inter-domain zone transfer packet, the \tp need to derive a correct 
-% key for the authentication. As we described in~\S\ref{ssec:keymanagement}, the key derivation
-% comprise with two steps: fetch the first-level key from the cache, and dynamically derive the 
-% second-level key from the first-level key. 
-% To securely forward a zone transfer packet over the public Internet, a \tp first 
-We investigate the key derivation performance. Recall that the key derivation proceeds
-differently for sender and receiver. Since the receiver is capable of directly deriving the
-second-level key from the local secret which is relatively faster than sender-side key
-derivation, here we focus primarily on the sender-side key derivation which comprises two steps;
-fetching the first-level key from the key table (Eq.~\ref{eq:1stkey}) and deriving the
-second-level key from the first-level key (Eq.~\ref{eq:2ndkey}). From a scalability
-perspective, we vary the number of branches (a \tp for each) by increasing the number of stored
-first-level keys up to \SI{100}{K}. Table~\ref{tab:derivation} depicts the average results of
-benchmark tests iterated over a million times each.
-% \claude{what about receiver side key derivation?}
-
-We observe that the lookup time for the first-level key is independent of the size of the key
-table, taking between \SI{154}{ns} and \SI{161}{ns}. In addition, the size of the key table is
-also irrelevant for the second-level key derivation
-because second-level keys are directly derived from first-level keys.
-The results indicate that the processing time for a key derivation is less than 1 $\mu$s
-even in very large networks with \SI{100}{K} branch sites, which is negligible considering
-network latency in today's Internet.
-% ---$\Delta t = \delta t_{Init} + \delta t_{1} + \delta t_{2}$.
-
-
-\paragraph{Authentication}
-The additional processing time for packet encryption and decryption is shown in
-Table~\ref{tab:authentication}. In summary, it requires approximately 1.5 to 2.5 $\mu$s to
-authenticate various sizes of packets. We note that the processing overhead occurs for the majority
-of tunneling technologies that provide confidentiality for data transmission. The processing
-time can be minimized with implementations using the Data Plane Development Kit (DPDK)~\cite{dpdk} or by leveraging hardware dedicated to cryptographic operations.
-
-
-% \begin{figure*}[!htb]
-% 	\begin{minipage}{.32\linewidth}
-% 		\centering
-% 		\includegraphics[width=\linewidth]{figs/pps.eps}
-% 		\caption{Forwarding performance of \tp for various size of packets.}
-% 		\label{fig:forwarding}
-% 	\end{minipage}\hspace*{1em}
-% 	\begin{minipage}{.32\linewidth}
-% 		\centering
-% 		\includegraphics[width=\linewidth]{figs/cdf_goodput.eps}
-% 		\caption{CDF of goodput for 1400-bytes of maximum segment size (MMS).}
-% 		\label{fig:goodput}
-% 	\end{minipage}\hspace*{1em}
-% 	\begin{minipage}{.32\linewidth}
-% 		\centering
-% 		\includegraphics[width=\linewidth]{figs/cdf_throughput.eps}
-% 		\caption{CDF of throughput including extra header fields.}
-% 		\label{fig:throughput}
-% 	\end{minipage}
-% \end{figure*}
-
-\section{Network Benchmarks}
-\label{sec:networkbenchmark}
 
 So far, we evaluated the performance of each instruction newly introduced. Since a different
 set of instructions needs to be applied depending on the zone transfer use case, it is also
