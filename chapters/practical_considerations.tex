@@ -1,7 +1,7 @@
 \chapter{Practical Considerations}
 \label{practical}
 
-In this section, we discuss some practical considerations including functional and
+In this chapter, we discuss some practical considerations including functional and
 management aspects, along with various deployment scenarios describing how \name can
 be realized on today's enterprise infrastructure.
 % We further discuss about the distributed controller in Appendix~\ref{ssec:distributedcontroller}.
@@ -24,14 +24,16 @@ This, however, can be addressed by enforcing \tps to use their public IP address
 to derive the symmetric keys. The keys are still secure since the first-level key
 from which the pairwise keys are derived is exchanged with the CA-certified public
 keys. Discovering the translated \tp address is also not a problem thanks to
-the controller informing senders about the recipient \tp's address (see, Protocol 3 in
+the controller informing senders about the recipient \tp's address (see Protocol 3 in
 Figure~\ref{fig:protocol}).
 
-A potential operational failure is where multiple \tps are behind the same NAT device.
-This would lead to \tps having identical keys from the view of remote \tps. One possible solution
-would be to use a unique \tp identifier instead. Since all such \tps would be under one administration domain, assigning unique \tp identifiers upon bootstrapping is feasible. Then, the \tps convey their identifiers in the AT header field alongside the destination zone ID. This
-might slightly increase the size of the header, but does not degrade the security of
-the underlying authentication.
+\cmnt{A potential operational failure is where multiple \tps are behind the same NAT device.
+	This would lead to \tps having identical keys from the view of remote \tps. One possible solution
+	would be to use a unique \tp identifier instead. Since all such \tps would be under one
+	administration domain, assigning unique \tp identifiers upon bootstrapping is feasible. Then,
+	the \tps convey their identifiers in the AT header field alongside the destination zone ID. This
+	might slightly increase the size of the header, but does not degrade the security of
+the underlying authentication.}
 
 
 \section{Tunneling Granularity} %\paragraph{Zone-to-Zone VPN}
@@ -53,10 +55,11 @@ However, from a flexibility and manageability standpoint, having a site-to-site 
 architecture is not ideal. Every tunnel endpoint needs to share a key with every other
 endpoint with which it wishes to exchange data. This adds state to the endpoints that
 needs to be kept in sync. Adding a new site requires an update on all the other sites that
-wish to communicate with the new site. Then, yet another layer of security middleboxes (e.g., firewalls) are required to perform zone transfer authentication since keys are do not designate a specific zone.
+wish to communicate with the new site. Then, yet another layer of security middleboxes (e.g.,
+firewalls) are required to perform zone transfer authentication since keys do not designate a specific zone.
 
-An alternative way of providing authentication is to use one key per zone. In this model,
-the \tp would sign the data on behalf of the zones. In case of a zone transfer, the \tp
+An alternative way of providing authentication is to use one key per zone pair. In this model,
+a \tp would sign the data on behalf of the zones. In case of a zone transfer, the \tp
 would do the transfer and then use the key of the source/receiver zone pair. This approach
 has the benefit that sender and receiver get decoupled as in principle any site that
 contains a given zone is able to decrypt data destined for that zone. Adding a new site
@@ -72,31 +75,10 @@ Driven by these considerations, we designed the new concept of site-to-zone tunn
 which represents a middle ground combining the advantages of the two approaches, the
 notion of secure tunneling and zone transfer authentication. The symmetric keys
 are distinguishable depending on the destination zone, while at the same time the
-zone-to-zone security policies are not being exposed. Thanks to the flexible and scalable key derivation scheme introduced in~\cite{rot2020piskes}, the key establishment does not expand
-state, while still providing unique symmetric keys per zone.
-
-
-% \begin{table}
-%   \caption{Comparison of nonce reset strategies.}
-%   \label{tab:comparison}
-%   \setlength{\tabcolsep}{4pt}
-%   \newcommand{\rot}[1]{\multicolumn{1}{c}{\adjustbox{angle=60,lap=\width-1em}{#1}}}
-%   \newcommand{\rotLast}[1]{\multicolumn{1}{c}{\adjustbox{angle=60}{#1}}}
-%   \centering
-%   \resizebox{0.485\textwidth}{!}{
-%     \begin{tabular}{*6{r}}
-%       \toprule
-%       % & \rot{Requires randomness} & \rot{Requires non-volatile memory} & \rot{Overlap probability (no reset)} & \rot{Overlap probability (R resets)} & \rot{Overlap} \\ 
-%       \midrule
-%       Counter only   & \xmark          & \xmark        & 0       & 1     & full \\
-%       Randomness only   & \cmark          & \xmark        & $1-(N!/(N^R-(N-R)!))$       & $1-(N!/(N^R-(N-R)!))$    & partial \\
-%       Counter paired with randomness   & \cmark          & \xmark        & 0       & $1-(S!/(S^R-(S-R)!))$     & full \\
-%       Reset points   & \xmark          & \cmark        & 0       & 0     & - \\ 
-%       \bottomrule
-%     \end{tabular}
-%   }
-% \end{table}
-
+zone-to-zone security policies are not being exposed. Thanks to the flexible and scalable
+key derivation scheme introduced in~\cite{rot2020piskes}, the key establishment does not expand
+state, while still providing unique symmetric keys per zone. Furthermore, this scheme scales
+linearly with the number of sites, not the number of zones, which ensures scalability.
 
 \section{Distributed Controllers}
 \label{sec:distributedcontroller}
@@ -131,8 +113,7 @@ cost-efficiency problem for a large-scale network with thousands of branches.
 Alternatively, we consider a sparse distribution model, e.g., on edge-cloud systems.
 Similar to today's cloud services, network operators running geographically distributed
 data centers can instantiate multiple controllers at the central point of regional branches.
-% \claude{branch centric?} 
-The control-plane latency overhead would be relatively higher compared to dense deployment
+The control-plane latency overhead would be higher compared to the dense deployment
 model---if the data center edges are geographically diverse, the overhead could be
 minimized---but, in terms of cost-optimization and management scalability, it could
 be a more viable approach.
@@ -161,7 +142,7 @@ acting as a first rendezvous point.
 % \claude{a tp has been configured with an initial controller address acting as rendez-vous point?}
 The initial information contains the controller's IP address
 ($C$), the corresponding zone ID ($Z_{C}$), and the \tp's IP address behind which the controller
-resides ($\tp_{C}$). If the controller locates in the remote site (i.e., $\tp_{new}
+resides ($\tp_{C}$). If the controller is located in a remote site (i.e., $\tp_{new}
 \neq \tp_{C}$), $\tp_{new}$ should connect with $C$ through $\tp_{C}$. Otherwise, e.g.,
 $C$ is within the same LAN or in public network, $\tp_{new}$ can directly send $C$ a request
 for control-plane channel establishment.
@@ -178,7 +159,39 @@ is also applied when changes in the network are detected.
 
 \section{Nonce Reset}
 \label{sec:nonce}
-% Authenticators are created using an AEAD algorithm with an underlying AES-128 cipher in GCM mode. GCM requires a nonce as input argument to build counters which are then used to create the keystream. 
+
+\begin{table}[htb]
+	\footnotesize
+	\caption{Comparsion of different nonce creation strategies. \texttt{l} is the length of the
+		nonce, \texttt{s} $\leq$ \texttt{l} is the subset of bits reserved for the random part of the nonce,
+		\texttt{p} is the number of packets sent and \texttt{r} is the number of unplanned nonce
+	resets.}
+	\label{tab:nonce}
+	\renewcommand\arraystretch{2}
+	\begin{tabularx}{1.1\linewidth}{|X|X|X|X|X|X|}
+		\hline
+		& \textbf{requires randomness} & \textbf{requires non-volatile memory} & \textbf{overlap probability w/o
+		resets}  & \textbf{overlap probability for \texttt{r} resets} & \textbf{overlap}   \\
+		\hline
+		\textbf{counter only} & no & no  & 0 & 1 & full \\
+		\hline
+		\textbf{randomness only}                & yes & no  &
+		$1-\frac{(2^l)!}{2^{l*p}(2^l-p)!}$
+		& $1-\frac{(2^l)!}{2^{l*p}(2^l-p)!}$ & partial \\
+		\hline
+		\textbf{counter paired with randomness} & yes & no  & 0 & $1-\frac{(2^s)!}{2^{s*r}(2^s-r)!}$
+		& full \\
+		\hline
+		\textbf{reset points} & no & yes & 0 & 0 & -    \\
+		\hline
+	\end{tabularx}%
+\end{table}
+
+\cmnt{uncomment sections below}
+
+% Authenticators are created using an AEAD algorithm with an underlying AES-128 cipher in GCM mode.
+% GCM requires a nonce as input argument to build counters which are then used to create the
+% keystream. 
 The same nonce must never be used twice with the same key, otherwise the security of the
 cipher significantly decreases. In theory it is easy to create nonces that fulfill this
 requirement. One can simply use a counter which is increased for every invocation of the
@@ -199,6 +212,7 @@ to approach this problem.
 	      reset point on NV-memory.
 \end{itemize}
 
+Table~\ref{tab:nonce} shows a comparison of the mentioned approaches.
 
 % \subsection{DMZ Traffic}
 % So far, we mainly described on how two \tps can securely communicate each other. However,
@@ -208,21 +222,21 @@ to approach this problem.
 % DMZ is a zone hosting public services. Since access traffic to the public services is 
 % mostly originated from public Internet, 
 
-% \subsection{Fast Failover}
-% \label{ssec:ecmp}
-% Operating multiple \tps with advanced ECMP-enabled layer 2 protocols (e.g., SPB and 
-% TRILL) is a viable network design that provides load balancing and enhanced resiliency 
-% against a \tp or link failure, as we discussed in \S\ref{ssec:disrupting}. 
-% If a \tp is unable to continue data transmission, ECMP engages. It searches an alternative
-% forwarding path considering cost equality and redirects flows through the new path, assuring
-% continuous communication for end hosts~\cite{rfc6754}. 
-% This elastic migration during a transient network outage, however, does not replicate the
-% forwarding state of each flow, and thus might require another step of repopulating  
-% forwarding state. Upon packet arrival, the new \tp fetches the zone transfer policy
-% and caches in the forwarding table. Note that, for \texttt{established}, it might
-% cause unexpected packet drops if the first packet is a response. Nevertheless, the 
-% communication would continue as soon as the original sender noticed the packet drop 
-% and requests retransmission. 
+\section{Fast Failover}
+\label{sec:ecmp}
+Operating multiple \tps with advanced ECMP-enabled layer 2 protocols (e.g., SPB and 
+TRILL) is a viable network design that provides load balancing and enhanced resiliency 
+against a \tp or link failure, as we discussed in \S\ref{sec:disrupting}. 
+If a \tp is unable to continue data transmission, ECMP engages. It searches an alternative
+forwarding path considering cost equality and redirects flows through the new path, assuring
+continuous communication for end hosts~\cite{rfc6754}. 
+This elastic migration during a transient network outage, however, does not replicate the
+forwarding state of each flow, and thus might require another step of repopulating  
+forwarding state. Upon packet arrival, the new \tp fetches the zone transfer policy
+and caches it in the forwarding table. Note that for \texttt{established} connections this might
+cause unexpected packet drops if the first packet is a response. Nevertheless, the 
+communication would continue as soon as the original sender notices the packet drop 
+and requests a retransmission. 
 
 
 % \subsection{Cross-enterprise Setup}
@@ -232,7 +246,8 @@ to approach this problem.
 % and technical constraints: i) the collaborators must acquire a proper access grant from
 % the enterprise's administration, and ii) install a \tp at their network.
 
-% The enterprise network would have a single administration domain as we assumed in~\S\ref{ssec:assumptions}. To allow the collaborators interconnect their network system
+% The enterprise network would have a single administration domain as we assumed
+% in~\S\ref{ssec:assumptions}. To allow the collaborators interconnect their network system
 
 % \subsection{\tp Deployment}
 % \label{ssec:deployment}
@@ -252,7 +267,14 @@ to approach this problem.
 \section{Incremental Deployability}
 \label{sec:deployability}
 
-To be incrementally deployable, \name does not require changes from end hosts nor the local network infrastructure. \name can take a supportive role by complementing already installed lines of defense such as firewalls, IPS, and IDS. For instance, traffic can be pre-filtered by \tps before it reaches firewalls located deeper inside the network. This approach favors an incremental deployment strategy. On the other hand, \name can also be used as a single, all-in-one solution providing packet filtering, tunneling, and routing within one device. Such a deployment is especially interesting for small branch sites with much simpler network layouts. Here, \name can drastically reduce the number of devices that need to be maintained.
+To be incrementally deployable, \name does not require changes from end hosts nor the local network
+infrastructure. \name can take a supportive role by complementing already installed lines of defense
+such as firewalls, IPS, and IDS. For instance, traffic can be pre-filtered by \tps before it reaches
+firewalls located deeper inside the network. This approach favors an incremental deployment
+strategy. On the other hand, \name can also be used as a single, all-in-one solution providing
+packet filtering, tunneling, and routing within one device. Such a deployment is especially
+interesting for small branch sites with much simpler network layouts. Here, \name can drastically
+reduce the number of devices that need to be maintained.
 
 
 

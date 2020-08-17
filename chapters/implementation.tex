@@ -162,7 +162,7 @@ Figure~\ref{fig:trie} shows a simplified example of how a trie stores IP subnets
 
 While the trie stores all configured IP subnets known to the \tp, another data structure is required
 to store the acutal zone transfer rules, stating which zones, and by extension which subnets, are
-allowed to communicate with each other (recall that a subnet corresponds to exactly one zone). For this,
+allowed to communicate with each other---recall that a subnet corresponds to exactly one zone. For this,
 we use a fast in-memory key-value store which maps to a given zone all other zones from which it
 accepts traffic.
 

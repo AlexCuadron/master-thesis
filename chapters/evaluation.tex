@@ -93,26 +93,26 @@
 \label{sec:systembenchmark}
 
 % \paragraph{Experimental Setup}
-We first conduct microbenchmark tests to evaluate the performance of \tp including the key
-derivation, packet authentication, and authorization. For scrutinize and reproducible evaluation,
-we leverage the standard benchmark library \texttt{testing} officially supported by golang.
+We first conduct microbenchmark tests to evaluate the performance of our \tp, including the
+derivation, packet authentication, and authorization. For a robust and reproducible evaluation,
+we leverage the standard benchmarking library \texttt{testing} officially supported by golang.
 The benchmarks are conducted on commodity machines equipped with an Intel i7 \SI{2.9}{GHz}
 CPU, \SI{16}{GB} memory, and a \SI{1}{GbE} NIC.
 
 \paragraph{Authorization}
 % The \tp's transfer module performs zone transfer authorization for every incoming packets.
-From technical perspectives, the zone transfer authorization is a database lookup consisting
-of three tree searches;
+From a technical perspective, the zone transfer authorization consists of two tree searches followed
+by a database lookup;
 upon receiving the packet metadata from the core module, the transfer module first looks
 up the corresponding zone identifiers for the source and destination addresses, and then
 compares them to the zone transfer policies. The authorization performance is therefore
-dependent on the lookup time for the policy database.
+dependent on the lookup time of the trees and the policy database.
 
 Table~\ref{tab:authorization} shows
-the benchmark results of database lookups for different quantities of policies.
+the benchmark results of database lookups for different numbers of policies.
 Note that each benchmark ran a couple million iterations and kept the mean value.
 The authorization check takes approximately 300 to \SI{500}{ns} per packet, which is a
-notable result considering: i) a single lookup consists of three tree searches, ii) the result
+notable result considering: i) a single lookup consists of two tree searches and a database lookup, ii) the result
 is from a high-level language implementation, and iii) the test set scales 1000 times.
 As expected, a lookup failure is commonly 24 to 31~\% faster than a successful lookup.
 This implies that abnormal packets with invalid zone transfer requests can be quickly
@@ -181,7 +181,7 @@ time can be minimized with implementations using the Data Plane Development Kit 
 So far, we evaluated the performance of each instruction newly introduced. Since a different
 set of instructions needs to be applied depending on the zone transfer use case, it is also
 important to investigate the overall network performance for handling different types of zone
-transfer packets. We now benchmark the actual network performance for both intra-/inter-domain
+transfer packets. We now benchmark the actual network performance for both intra- and inter-domain
 zone transfer cases.
 
 \paragraph{Latency Inflation}
@@ -190,9 +190,9 @@ transfer where the source and destination zones are within the same local networ
 the \tp only performs zone transfer authorization. Since no cryptographic operations are involved,
 the additional latency is negligible (as a single legitimate zone transfer takes $\sim$
 \SI{500}{ns}). There might be an authorization abort due to a lookup failure that could be
-caused by the following three reasons: no source zone ID, destination zone ID, or
+caused by the following three reasons: no matching source zone ID, destination zone ID, or
 zone transfer policy. In our prototype, the lookups are performed sequentially and thus
-there are different processing overheads (\SI{100}{ns} $\sim$ \SI{600}{ns}) depending on when a
+there are different processing overheads (\SI{100}{ns} $\sim$ \SI{450}{ns}) depending on when a
 lookup failure occurs. Nevertheless, in case there exists no valid zone-transfer policy, the
 packet will be simply dropped and therefore no additional latency is caused.
 
@@ -212,8 +212,8 @@ performance between sender-side and receiver-side \tps.
 \paragraph{Forwarding Performance}
 We further investigate the actual forwarding performance for various packet sizes (\SI{128}{B},
 \SI{256}{B}, \SI{512}{B}, \SI{1024}{B}) including a representative mixture of Internet traffic
-(iMIX)~\cite{rfc6985}; we select the minimum packet size of 128 bytes instead 64 bytes which is
-commonly considered to be the smallest packet size, because \name's tunneling requires at least 116
+(iMIX)~\cite{rfc6985}; we select the minimum packet size of 128 bytes instead of 64 bytes which is
+commonly considered to be the smallest packet size, because \name's tunneling requires an at least 116
 bytes long frame, i.e., Outer L3 header (40 bytes), AT header
 (36 bytes), and EIP (40 bytes). Figure~\ref{fig:forwarding} shows the results. The
 baseline is the forwarding performance without \tp operations. The other bars represent the
@@ -222,10 +222,10 @@ zone transfer (with authorization and authentication) respectively.
 
 For 128-byte packets which demonstrates the highest packet rate, and thus requiring the most
 extreme packet processing, the intra-domain zone transfer exhibits a throughput degradation
-of only 11\%. It also achieves 97 $\sim$ 100 \% of throughput for other packet sizes. These
-results are expected because the \tp performs only authorization for the intra-domain zone
-transfer packets, which would increase a processing delay of $\leq$ 500 ns; considering that
-a typical intra-domain packet transmission used to show a few milliseconds of latency, the
+of only 11\%. For other packet sizes we achieve a throughput of 97 $\sim$ 100\%. These
+results are expected because \tps only perform zone authorization for intra-domain zone transfer
+packets, which increases processing delay by $\leq$ 500 ns. Considering that
+a typical intra-domain packet transmission usually shows a few milliseconds of latency, the
 additional delay is negligible.
 
 On the other hand, the inter-domain zone transfer degrades the throughput by 44\% for the
@@ -236,8 +236,8 @@ including all the network headers (throughputs) as shown in Figure~\ref{fig:good
 \ref{fig:throughput}. From the comparison, we observe the followings: i) the inter-domain
 zone transfer achieves a similar throughput to the baseline if the extra headers are considered,
 ii) the performance degradation is caused by not only the additional processing delay but also
-transmission delay of the extra headers, and therefore iii) \name performs similar to the
-today's tunneling applications while providing the security policy enforcement for network
+transmission delay of the extra headers, and therefore iii) \name performs similar to
+today's tunneling applications while providing security policy enforcement for network
 zoning.
 
 

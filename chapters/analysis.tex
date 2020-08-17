@@ -20,7 +20,7 @@
 % mitigations.
 We analyze the security properties that \name provides, considering the threat model
 introduced in \S\ref{sec:threatmodel}. The attack classes described here are twofold:
-i) attacks to infiltrate restricted and highly secure zones without a proper permission,
+i) attacks to infiltrate restricted and highly secure zones without proper permission,
 and ii) disruption attacks that prevent availability.
 % For each attack class, we describe potential attack methodologies and mitigations.
 
@@ -72,10 +72,10 @@ and ii) disruption attacks that prevent availability.
 % is hardly possible. 
 
 
-\section{Infiltration without a Permission}
+\section{Infiltration without Permission}
 \label{sec:infiltration}
 
-Apparently, one of the main attack objectives is to access valuable information assets
+One of the main attack objectives is to access valuable information assets
 protected by access constraints.
 
 \paragraph{Man-In-The-Middle Attack}
@@ -84,11 +84,11 @@ with two \tps and relay messages between them. By using the attacker's public ke
 channel establishments, the attacker is able to generate valid packets that can bypass the
 \tp's authentication check.
 
-\name's PKI design prevents the MITM attacks. A MITM attack
+\name's PKI design prevents MITM attacks. A MITM attack
 can succeed only if the attacker convinces each \tp that they are talking to each other.
 In the process of secure channel establishment, however, \tps authenticate each other using
 the certificates issued by the mutually trusted CA (e.g., enterprise). Since the attacker's
-public key cannot be certified by a valid certificate issued by the CA, a MITM will fail.
+public key cannot be certified by a valid certificate issued by that CA, a MITM attack will fail.
 
 
 \paragraph{Packet Replay}
@@ -119,7 +119,7 @@ Another approach is to brute-force the key used for authentication or the MAC. A
 Flooding the \tp's authentication process could be an effective attack vector. Attackers
 may attempt to forward a large number of packets to the target \tp in order to exhaust the
 \tp's resources. Even if the attack packets contain invalid authentication tokens, the \tp still
-needs to verify these tokens, therefore wasting resources, preventing legitimate packets from getting through.
+needs to verify these tokens which wastes resources and prevents legitimate packets from getting through.
 
 To be resilient to such attacks, we consider operating multiple \tps at the entrypoints
 of cooperative networks. Multiple \tps enables network operators

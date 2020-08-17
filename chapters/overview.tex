@@ -1,7 +1,7 @@
 \chapter{Overview}
 \label{overview}
 
-This section provides an overview of \name. We first elaborate the fundamental goals
+This chapter provides an overview of \name. We first elaborate the fundamental goals
 of this research, along with requirements, and design choices (\S\ref{sec:design}).
 We then outline \name including a brief introduction of each component and their
 workflow (\S\ref{sec:overview}). Finally, we describe our threat model
@@ -11,9 +11,9 @@ workflow (\S\ref{sec:overview}). Finally, we describe our threat model
 \label{sec:design}
 
 \paragraph{Goal}
-The fundamental goal of this work is to build an architecture that weds local
-network zoning and inter-domain routing in regards of lightweight interoperability,
-secure zone transfer, and incremental deployability---thereby enabling secure,
+The fundamental goal of this work is to build an architecture that combines local
+network zoning and inter-domain routing with regard to secure zone transfers, lightweight protocol interoperability,
+and incremental deployability---thereby enabling secure,
 scalable, and flexible network zoning on a global scale. That is, an administration
 domain expresses zone definitions and corresponding zone transfer rules, and
 deploys the policies to distributed network entities. These policies force the
@@ -51,7 +51,7 @@ We consider the following properties to achieve this goal.
 % modern the Internet environment, such that our architecture keeps its practicality 
 % and deployability. In particular, the following design choices are considered:
 We design \name working with mature technologies that are embraced in modern enterprise
-environments. In particular, the following design choices are considered:
+environments. In particular, the following design choices are made:
 
 \begin{itemize}
 	\item Network programmability is realized with the concept of a logically centralized
@@ -60,10 +60,9 @@ environments. In particular, the following design choices are considered:
 	      authenticity is critical (e.g., symmetric key exchange).
 	\item Symmetric cryptography is used for the rest of the data
 	      transmission, ensuring efficient packet processing.
-	      % \item \claude{A modular design of the \name Zone Translation Point makes it easy to extend \name with new functionality.}
 \end{itemize}
 
-\begin{figure}[t]
+\begin{figure}[htb]
 	\begin{center}
 		\includegraphics[width=.9\textwidth]{overview.eps}
 	\end{center}
@@ -81,7 +80,7 @@ environments. In particular, the following design choices are considered:
 	\centering
 	\includegraphics[width=.49\linewidth]{tp_controlflow.png}
 	\caption{Control flow of the Zone Translation Point}
-	\label{archi:overview}
+	\label{archi:flow}
 \end{floatingfigure}
 
 Figure~\ref{fig:overview} illustrates an overview of \name.
@@ -140,6 +139,7 @@ channel to enforce the configuration at the individual premises.
 	      the validity of the packet transmission if desired.
 \end{enumerate}
 
+Figure~\ref{archi:flow} shows the control flow of a \tp.
 
 \section{Threat Model}
 \label{sec:threatmodel}
@@ -200,7 +200,7 @@ confidentiality remain intact unless the cryptographic keys are exposed.
 
 \paragraph{Time Synchronization}
 Core entities within the cooperative network have loosely synchronized system clocks with a
-precision of seconds (e.g., network time protocol achieves precision of tens of milliseconds).
+precision of seconds (e.g., network time protocol achieves a precision of tens of milliseconds).
 Time synchronization is mainly used to constrain the validity of cryptographic keys.
 
 \paragraph{Sole Administration}

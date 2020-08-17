@@ -1,6 +1,8 @@
 \chapter{Related Work}
 \label{related}
 
+\cmnt{move to bottom?}
+
 % \paragraph{Security Zoning}
 % During stacking our knowledge of security zoning, we noticed that there is a limited number of academic research on network zoning architecture while considerable research is underway in the industry regarding access management and system design. 
 % firewall architecture 
@@ -10,12 +12,12 @@
 % 4. colaborative 
 The majority of literature in network zoning has focused on security enforcement architecture using middleboxes such as firewalls, IPS, and IDS.
 Conventional security middleboxes define restricted zones and filter unwanted traffic at the entry points of protected zones~\cite{cheswick1994firewalls}. 
-As information systems and the corresponding network functions get more complicated, the notion of distributed security systems has been introduced in the late 1990's~\cite{bellovin1999distributed}.
+As information systems and the corresponding network functions got more complicated, the notion of distributed security systems has been introduced in the late 1990's~\cite{bellovin1999distributed}.
 Early approaches to protect only internal information systems from external threats have further evolved to mitigate sophisticated threats, for example insider attacks, rule tampering, application-level proxies, and denial-of-service attacks~\cite{markham2001security}.
 Later, with emerging network virtualization technologies and cloud computing environments, virtual firewalls and collaborative security enforcement kept getting attention from both academia and the industry~\cite{liu2008collaborative,yu2017psi}. 
 
-Despite the numerous research efforts, network zoning with security middleboxes has challenges with respect to performance---the iMIX throughput degrades by 40 - 75\% on commodity products~\cite{juniper2020comparison}---and misconfigurations~\cite{fayaz2016buzz,tschaen2016sfc,yuan2020netsmc}. 
-With \name, we address the challenges by leveraging a cryptographic-based policy enforcement and centralized policy orchestration, achieving scalable, effective, and cost-efficient network zoning.
+Despite numerous research efforts, network zoning using security middleboxes has issues with respect to performance---the iMIX throughput degrades by 40 - 75\% on commodity products~\cite{juniper2020comparison}---and misconfigurations~\cite{fayaz2016buzz,tschaen2016sfc,yuan2020netsmc}. 
+With \name, we address these challenges by leveraging a cryptographic-based policy enforcement and centralized policy orchestration, achieving scalable, effective, and cost-efficient network zoning.
 
 % Zoning is orthogonal with all the concepts.
 % Zoning is a fundamental piece. Zoning need to be done first in scale passion to decide which node can communicate which other nodes, then put firewalls, ids, and ips.
@@ -28,8 +30,9 @@ VLAN~\cite{ieee2018vlan} is the most frequently used network segmentation techni
 It logically segments a physical LAN into up to 4094 virtual LANs by tagging the layer 2 header with a unique VLAN identifier (VID).
 Later, Virtual eXtensible LAN (VXLAN)~\cite{rfc7348} has been introduced for better scalability; it expands the number of virtual LANs to up to 16 million by leveraging a 24-bit identifier.
 SPB~\cite{ieee2012spb} and Trill~\cite{rfc6325,rfc7176} are layer 2 routing protocols enabling multi-path communication among virtual LANs within the same physical LAN. 
-Although security is an important property in the network segmentation, unfortunately it has not been treated as a major concern---no protection in membership and access control.
-To isolate each segment, use of large number of security middleboxes is necessary, thus increasing operational costs and management complexity. 
+Although security is an important property when it comes to network segmentation, it unfortunately
+has often not been treated as a major concern. Systems lack protection for segment membership and access control.
+To isolate each segment, use of a large number of security middleboxes is necessary, thus increasing operational costs and management complexity. 
 
 SVLAN~\cite{kwon2020svlan} is an architecture enhancing security in network isolation by enforcing the receiver's consent towards incoming traffic. 
 SVLAN is the closest work related to \name, but there are three major differences.
