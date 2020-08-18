@@ -75,23 +75,25 @@ CPU, \SI{16}{GB} memory, and a \SI{1}{GbE} NIC.
 
 \paragraph{Authorization}
 % The \tp's transfer module performs zone transfer authorization for every incoming packets.
-\cmnt{adapt text to reflect new table}
 From a technical perspective, the zone transfer authorization consists of two tree searches followed
-by a database lookup;
-upon receiving the packet metadata from the core module, the transfer module first looks
+by a database lookup.
+Upon receiving the packet metadata from the core module, the transfer module first looks
 up the corresponding zone identifiers for the source and destination addresses, and then
-compares them to the zone transfer policies. The authorization performance is therefore
-dependent on the lookup time of the trees and the policy database.
+compares them to the zone transfer policies. In our prototype, these lookups are performed sequentially.
+The authorization performance is therefore dependent on the lookup time of the trees and the policy database.
 
-Table~\ref{tab:authorization} shows
-the benchmark results of database lookups for different numbers of policies.
-Note that each benchmark ran a couple million iterations and kept the mean value.
-The authorization check takes approximately 300 to \SI{500}{ns} per packet, which is a
-notable result considering: i) a single lookup consists of two tree searches and a database lookup, ii) the result
-is from a high-level language implementation, and iii) the test set scales 1000 times.
-As expected, a lookup failure is commonly 24 to 31~\% faster than a successful lookup.
-This implies that abnormal packets with invalid zone transfer requests can be quickly
-discarded.
+Table~\ref{tab:authorization} shows the benchmark results of database lookups
+for different numbers of policies. Note that each benchmark ran a couple million
+iterations and reports the mean value. The authorization check takes
+approximately 300 to \SI{450}{ns} per packet, which is a notable result
+considering: i) a single lookup consists of two tree searches and a database
+lookup, ii) the result is from a high-level language implementation, and iii)
+the test set scales 1000 times. There might be an authorization abort due to a
+lookup failure that is caused by one of the following three reasons: i) no
+matching source zone ID, ii) no matching destination zone ID, or iii) no matching zone transfer policy.
+As expected, a lookup failure is commonly 3 to 75\% faster than a successful
+lookup, depending on when a lookup failure occurs. This implies that abnormal
+packets with invalid zone transfer requests can be quickly discarded.
 
 
 \paragraph{Key Derivation}
@@ -108,22 +110,19 @@ From a scalability perspective, we vary the number of branches (a \tp for each) 
 first-level keys up to \SI{100}{K}. Table~\ref{tab:derivation_send} depicts the average time for sender-side key derivation
 measured by a benchmark running more than a million iterations. Table~\ref{tab:derivation_rec} shows the same results for
 receiver-side key derivation. As can be seen, looking up the first-level key from cache is slightly faster than
-deriving the first-level key from the local secret. This is expected when using a high-level language like golang.
+deriving the first-level key from the local secret ($\sim$\SI{155}{ns} vs. $\sim$\SI{190}{ns}).
+This is expected when using a high-level language like golang.
 Much faster key derivations are possible when using a state-of-the-art implementation \cite{rot2020piskes}.
 On the other hand, the second-level key derivation takes roughly the same amount of time for sender- and receiver-side.
-This is to be exptected as this derivation step is identical in both cases.
-
-We observe that the lookup time for the first-level key is independent of the size of the key
-table, taking between \SI{154}{ns} and \SI{161}{ns}. In addition, the size of the key table is
-also irrelevant for the second-level key derivation
-because second-level keys are directly derived from first-level keys.
-The results indicate that the processing time for a key derivation is less than 1 $\mu$s
+This is to be exptected as this derivation step is identical in both cases. In addition, the size of the key table
+has no influence on the second-level key derivation since second-level keys are directly derived from first-level keys.
+The results indicate that the total processing time for the full chain of key derivations takes less than 0.5 $\mu$s
 even in very large networks with \SI{100}{K} branch sites, which is negligible considering
 network latency in today's Internet.
 
 \paragraph{Authentication}
 The additional processing time for packet encryption and decryption is shown in
-Table~\ref{tab:authentication}. In summary, it requires approximately 1.5 to 2.5 $\mu$s to
+Table~\ref{tab:authentication}. In summary, it requires approximately 1.5 to 2 $\mu$s to
 authenticate various sizes of packets. We note that the processing overhead occurs for the majority
 of tunneling technologies that provide confidentiality for data transmission. The processing
 time can be minimized with implementations using the Data Plane Development Kit
@@ -137,7 +136,7 @@ operations.
 	\begin{minipage}{.47\linewidth}
 		\centering
 		\includegraphics[width=\linewidth]{intra.eps}
-		\caption{Processing time for intra-domain zone transfer.}
+		\caption{Processing time for intra-domain zone transfer. \cmnt{dashed grid lines, how???!}}
 		\label{fig:intra}
 	\end{minipage}\hspace{1em}
 	\begin{minipage}{.47\linewidth}
@@ -179,27 +178,23 @@ transfer packets. We now benchmark the actual network performance for both intra
 zone transfer cases.
 
 \paragraph{Latency Inflation}
-Figure~\ref{fig:intra} illustrates the network benchmark results for the intra-domain zone
-transfer where the source and destination zones are within the same local network, such that
-the \tp only performs zone transfer authorization. Since no cryptographic operations are involved,
-the additional latency is negligible (as a single legitimate zone transfer takes $\sim$
-\SI{500}{ns}). There might be an authorization abort due to a lookup failure that could be
-caused by the following three reasons: no matching source zone ID, destination zone ID, or
-zone transfer policy. In our prototype, the lookups are performed sequentially and thus
-there are different processing overheads (\SI{100}{ns} $\sim$ \SI{450}{ns}) depending on when a
-lookup failure occurs. Nevertheless, in case there exists no valid zone-transfer policy, the
-packet will be simply dropped and therefore no additional latency is caused.
+Figure~\ref{fig:intra} illustrates the network benchmark results for the intra-domain use case.
+Source and destination zones are located within the same local network, such that
+the \tp only needs to parse the packets and perform zone transfer authorization. Since no cryptographic operations are involved,
+the additional latency is negligible, as a single legitimate zone transfer takes $\sim$
+\SI{500}{ns}. Additionally, the results illustrate that the processing overhead of intra-domain traffic
+is independent of the packet size, which is expected since zone transfer authorization operates on the packet header only.
 
 For inter-domain zone transfer cases, we benchmark the overall network inflation during \tp
 operations including packet parsing, key derivation, authorization, and authentication.
 Figure~\ref{fig:inter_sender} and~\ref{fig:inter_receiver} depict the processing delay from
-sender-side \tp and receiver-side \tp, respectively.
+sender-side \tp and receiver-side \tp respectively.
 From the results, we make the following observations: first, the overall latency inflation that
 \name introduces is insignificant ($\sim 3 \mu$s). Second, \name scales well with the size of the
 network, i.e., the number of branches. We do not see any notable performance degradation
-($\leq$ \SI{200}{ns}). Third, the size of a packet is the primary factor for the latency increment
+($\leq$ \SI{200}{ns}) between network sizes. Third, the size of a packet is the primary factor for the latency increment
 as expected for all data-plane devices. The packet size has a small latency incremental factor of
-1.28 (i.e, 2.4 $\mu$s to 3.8 $\mu$s). Lastly, we observe no significant bias in network
+1.28 (i.e, 2.5 $\mu$s to 3.2 $\mu$s). Lastly, we observe no significant bias in network
 performance between sender-side and receiver-side \tps.
 
 
