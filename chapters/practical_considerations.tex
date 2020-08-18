@@ -33,7 +33,7 @@ Figure~\ref{fig:protocol}).
 	administration domain, assigning unique \tp identifiers upon bootstrapping is feasible. Then,
 	the \tps convey their identifiers in the AT header field alongside the destination zone ID. This
 	might slightly increase the size of the header, but does not degrade the security of
-the underlying authentication.}
+	the underlying authentication.}
 
 
 \section{Tunneling Granularity} %\paragraph{Zone-to-Zone VPN}
@@ -49,85 +49,97 @@ ii) zone-to-zone tunneling, and iii) site-to-zone tunneling (the one used by \na
 % a \tp pair, e.g., the first-level key. Indeed, the site-to-site key establishment is 
 % already enough in terms of communication security and privacy for two tunnel endpoints. 
 % However, this approach requires another step of zone transfer verification.
-Similar to IPSec VPN, site-to-site tunneling provides strong guarantees about communication
-security and privacy for two tunnel endpoints.
-However, from a flexibility and manageability standpoint, having a site-to-site tunneling
-architecture is not ideal. Every tunnel endpoint needs to share a key with every other
-endpoint with which it wishes to exchange data. This adds state to the endpoints that
-needs to be kept in sync. Adding a new site requires an update on all the other sites that
-wish to communicate with the new site. Then, yet another layer of security middleboxes (e.g.,
-firewalls) are required to perform zone transfer authentication since keys do not designate a specific zone.
+Similar to IPSec VPN, site-to-site tunneling provides strong guarantees about
+communication security and privacy for two tunnel endpoints. However, from a
+flexibility and manageability standpoint, having a site-to-site tunneling
+architecture is not ideal. Every tunnel endpoint needs to share a key with every
+other endpoint with which it wishes to exchange data. This adds state to the
+endpoints that needs to be kept in sync. Adding a new site requires an update on
+all the other sites that wish to communicate with the new site. Then, yet
+another layer of security middleboxes (e.g., firewalls) are required to perform
+zone transfer authentication since keys do not designate a specific zone.
 
-An alternative way of providing authentication is to use one key per zone pair. In this model,
-a \tp would sign the data on behalf of the zones. In case of a zone transfer, the \tp
-would do the transfer and then use the key of the source/receiver zone pair. This approach
-has the benefit that sender and receiver get decoupled as in principle any site that
-contains a given zone is able to decrypt data destined for that zone. Adding a new site
-would be as easy as fetching the right keys for the zones used in this site. This process
-is independent of all the other sites. However, a receiver \tp needs to be able to fetch
-the right keys for the zones, which means the zone transfer information must be visible,
-and thus attacker could potentially learn the zone structure of the observed network.
-% \claude{only the destination zone id would be leaked, same as in our model} 
-Also, having a separate key per zone pair does not scale since the number of zones get big
-very quickly for large networks.
+An alternative way of providing authentication is to use one key per zone pair.
+In this model, when a zone transfer is required, a \tp would sign the data on
+behalf of the zones with the corresponding source/destination zone key pair.
+This approach has the benefit that sender and receiver get decoupled as in
+principle any site that posesses the right keys can perform that zone transfer.
+Adding a new site would be as easy as fetching the right keys for the desired
+zone combinations. This process is independent of all the other sites. However,
+a receiver \tp needs to be able to fetch the right keys from the cache, in order
+to derive second-level keys, which means that the zone transfer information must
+be visible in plain text. Thus, an attacker could potentially learn the zone
+structure of the observed network. Also, having a separate key per zone pair
+does not scale since the number of zones gets big very quickly for large
+networks.
 
-Driven by these considerations, we designed the new concept of site-to-zone tunneling,
-which represents a middle ground combining the advantages of the two approaches, the
-notion of secure tunneling and zone transfer authentication. The symmetric keys
-are distinguishable depending on the destination zone, while at the same time the
-zone-to-zone security policies are not being exposed. Thanks to the flexible and scalable
-key derivation scheme introduced in~\cite{rot2020piskes}, the key establishment does not expand
-state, while still providing unique symmetric keys per zone. Furthermore, this scheme scales
-linearly with the number of sites, not the number of zones, which ensures scalability.
+Driven by these considerations, we designed the new concept of site-to-zone
+tunneling, which represents a middle ground combining the advantages of the two
+approaches, the notion of secure tunneling and zone transfer authentication. The
+symmetric keys are distinguishable depending on the destination zone, while at
+the same time the zone-to-zone security policies are not being exposed. Thanks
+to the flexible and scalable key derivation scheme introduced
+in~\cite{rot2020piskes}, the key establishment does not expand state, while
+still providing unique symmetric keys per zone. Furthermore, this scheme scales
+linearly with the number of sites, not the number of zones, which ensures
+scalability.
 
 \section{Distributed Controllers}
 \label{sec:distributedcontroller}
-Driven by the scalability and reliability issues inherent to a single physical controller,
-namely \textit{single-point-of-failure}, logically centralized control-planes built on
-physically distributed instances find wide acceptance in the current practice. The most
-common approaches realizing distributed controllers can be broadly categorized into
-horizontal distribution~\cite{berde2014onos,medved2014opendaylight} and hierarchical
-distribution~\cite{hassas2012kandoo,yap2017taking}. Independent of which distribution
-architecture is used, we discuss location, coordination, and migration aspects of distributed
-controllers.
+Driven by the scalability and reliability issues inherent to a single physical
+controller, namely \textit{single-point-of-failure}, logically centralized
+control-planes built on physically distributed instances find wide acceptance in
+the current practice. The most common approaches realizing distributed
+controllers can be broadly categorized into horizontal
+distribution~\cite{berde2014onos,medved2014opendaylight} and hierarchical
+distribution~\cite{hassas2012kandoo,yap2017taking}. Independent of which
+distribution architecture is used, we discuss location, coordination, and
+migration aspects of distributed controllers.
 
 \paragraph{Location}
-The notion of a logically centralized control-plane offers flexibility in network design
-and management. A key design choice is placement of the (distributed) controllers, which
-could impact to performance, reliability, and management scalability of a given network.
-There is comprehensive research on the controller placement problem considering practical
-issues from control latency to reliability, from cost-optimization to load balancing, and so
-on~\cite{das2019survey,zhang2017role,he2019toward}. Among those, we are mainly interested in the
-latency performance indicator; that is the latency between a controller and regional forwarding
-devices.
+The notion of a logically centralized control-plane offers flexibility in
+network design and management. A key design choice is placement of the
+(distributed) controllers, which could impact to performance, reliability, and
+management scalability of a given network. There is comprehensive research on
+the controller placement problem considering practical issues from control
+latency to reliability, from cost-optimization to load balancing, and so
+on~\cite{das2019survey,zhang2017role,he2019toward}. Among those, we are mainly
+interested in the latency performance indicator; that is the latency between a
+controller and regional forwarding devices.
 
-The best latency is achieved when each branch site has its own controller. By a placement
-near local \tps, the controller minimizes the \tp-controller latency for the zone
-transfer authorization protocol, allowing instant feedbacks for packet forwarding---we note
-that inter-controller communication for global coordination is commonly not latency sensitive.
-For the sake of control-plane security, the controller resides in a highly restricted zone to
-which only the local \tps and remote controllers have access. Although the per-site controller
-offers the best performance regarding policy enforcement for the data-plane, there might be a
-cost-efficiency problem for a large-scale network with thousands of branches.
+The best latency is achieved when each branch site has its own controller. By a
+placement near local \tps, the controller minimizes the \tp-controller latency
+for the zone transfer authorization protocol, allowing instant feedbacks for
+packet forwarding---we note that inter-controller communication for global
+coordination is commonly not latency sensitive. For the sake of control-plane
+security, the controller resides in a highly restricted zone to which only the
+local \tps and remote controllers have access. Although the per-site controller
+offers the best performance regarding policy enforcement for the data-plane,
+there might be a cost-efficiency problem for a large-scale network with
+thousands of branches.
 
-Alternatively, we consider a sparse distribution model, e.g., on edge-cloud systems.
-Similar to today's cloud services, network operators running geographically distributed
-data centers can instantiate multiple controllers at the central point of regional branches.
-The control-plane latency overhead would be higher compared to the dense deployment
-model---if the data center edges are geographically diverse, the overhead could be
-minimized---but, in terms of cost-optimization and management scalability, it could
-be a more viable approach.
+Alternatively, we consider a sparse distribution model, e.g., on edge-cloud
+systems. Similar to today's cloud services, network operators running
+geographically distributed data centers can instantiate multiple controllers at
+the central point of regional branches. The control-plane latency overhead would
+be higher compared to the dense deployment model---if the data center edges are
+geographically diverse, the overhead could be minimized---but, in terms of
+cost-optimization and management scalability, it could be a more viable
+approach.
 
 \paragraph{Coordination}
-It is important to keep consistency in global coordination across the distributed controllers.
-Indeed, inconsistency in security policy might grant hosts with a low security
-clearance unauthorized access to highly restricted zones, resulting in unexpected information
-leakage and eventually administration failure. With this in mind, we consider a consensus
-algorithm with strong consistency guarantees~\cite{panda2013cap,phemius2014disco,shi2014giraffe},
-where the security policy is dynamically shared/replicated across the distributed controller
-instances, ensuring concurrent policy enforcements toward the data-plane devices. There
-are numerous open-source projects, such as \fnurl{Consul}{https://github.com/hashicorp/consul},
-\fnurl{Apache ZooKeeper}{https://zookeeper.apache.org/}, and \fnurl{ETCD}{https://github.com/etcd-io/etcd} available.
+It is important to keep consistency in global coordination across the
+distributed controllers. Indeed, inconsistency in security policy might grant
+hosts with a low security clearance unauthorized access to highly restricted
+zones, resulting in unexpected information leakage and eventually administration
+failure. With this in mind, we consider a consensus algorithm with strong
+consistency guarantees~\cite{panda2013cap,phemius2014disco,shi2014giraffe},
+where the security policy is dynamically shared/replicated across the
+distributed controller instances, ensuring concurrent policy enforcements toward
+the data-plane devices. There are numerous open-source projects, such as
+\fnurl{Consul}{https://github.com/hashicorp/consul}, \fnurl{Apache
+	ZooKeeper}{https://zookeeper.apache.org/}, and
+\fnurl{ETCD}{https://github.com/etcd-io/etcd} available.
 
 \paragraph{\tp Migration}
 To benefit from the distributed controller environment, a dynamic controller discovery
@@ -143,7 +155,7 @@ acting as a first rendezvous point.
 The initial information contains the controller's IP address
 ($C$), the corresponding zone ID ($Z_{C}$), and the \tp's IP address behind which the controller
 resides ($\tp_{C}$). If the controller is located in a remote site (i.e., $\tp_{new}
-\neq \tp_{C}$), $\tp_{new}$ should connect with $C$ through $\tp_{C}$. Otherwise, e.g.,
+	\neq \tp_{C}$), $\tp_{new}$ should connect with $C$ through $\tp_{C}$. Otherwise, e.g.,
 $C$ is within the same LAN or in public network, $\tp_{new}$ can directly send $C$ a request
 for control-plane channel establishment.
 
@@ -165,24 +177,24 @@ is also applied when changes in the network are detected.
 	\caption{Comparsion of different nonce creation strategies. \texttt{l} is the length of the
 		nonce, \texttt{s} $\leq$ \texttt{l} is the subset of bits reserved for the random part of the nonce,
 		\texttt{p} is the number of nonces generated and \texttt{r} is the number of unplanned nonce
-	resets.}
+		resets.}
 	\label{tab:nonce}
 	\renewcommand\arraystretch{2}
 	\begin{tabularx}{1.1\linewidth}{|X|X|X|X|X|X|}
 		\hline
-		& \textbf{requires randomness} & \textbf{requires non-volatile memory} & \textbf{overlap probability w/o
-		resets}  & \textbf{overlap probability for \texttt{r} resets} & \textbf{overlap}   \\
+		                                        & \textbf{requires randomness}                       & \textbf{requires non-volatile memory} & \textbf{overlap probability w/o
+		resets}                                 & \textbf{overlap probability for \texttt{r} resets} & \textbf{overlap}                                                                                                    \\
 		\hline
-		\textbf{counter only} & no & no  & 0 & 1 & full \\
+		\textbf{counter only}                   & no                                                 & no                                    & 0                               & 1                                  & full \\
 		\hline
-		\textbf{randomness only}                & yes & no  &
+		\textbf{randomness only}                & yes                                                & no                                    &
 		$1-\frac{(2^l)!}{2^{l*p}(2^l-p)!}$
-		& $1-\frac{(2^l)!}{2^{l*p}(2^l-p)!}$ & partial \\
+		                                        & $1-\frac{(2^l)!}{2^{l*p}(2^l-p)!}$                 & partial                                                                                                             \\
 		\hline
-		\textbf{counter paired with randomness} & yes & no  & 0 & $1-\frac{(2^s)!}{2^{s*r}(2^s-r)!}$
-		& full \\
+		\textbf{counter paired with randomness} & yes                                                & no                                    & 0                               & $1-\frac{(2^s)!}{2^{s*r}(2^s-r)!}$
+		                                        & full                                                                                                                                                                     \\
 		\hline
-		\textbf{reset points} & no & yes & 0 & 0 & -    \\
+		\textbf{reset points}                   & no                                                 & yes                                   & 0                               & 0                                  & -    \\
 		\hline
 	\end{tabularx}%
 \end{table}
@@ -224,19 +236,19 @@ Table~\ref{tab:nonce} shows a comparison of the mentioned approaches.
 
 \section{Fast Failover}
 \label{sec:ecmp}
-Operating multiple \tps with advanced ECMP-enabled layer 2 protocols (e.g., SPB and 
-TRILL) is a viable network design that provides load balancing and enhanced resiliency 
-against a \tp or link failure, as we discussed in \S\ref{sec:disrupting}. 
+Operating multiple \tps with advanced ECMP-enabled layer 2 protocols (e.g., SPB and
+TRILL) is a viable network design that provides load balancing and enhanced resiliency
+against a \tp or link failure, as we discussed in \S\ref{sec:disrupting}.
 If a \tp is unable to continue data transmission, ECMP engages. It searches an alternative
 forwarding path considering cost equality and redirects flows through the new path, assuring
-continuous communication for end hosts~\cite{rfc6754}. 
+continuous communication for end hosts~\cite{rfc6754}.
 This elastic migration during a transient network outage, however, does not replicate the
-forwarding state of each flow, and thus might require another step of repopulating  
+forwarding state of each flow, and thus might require another step of repopulating
 forwarding state. Upon packet arrival, the new \tp fetches the zone transfer policy
 and caches it in the forwarding table. Note that for \texttt{established} connections this might
-cause unexpected packet drops if the first packet is a response. Nevertheless, the 
-communication would continue as soon as the original sender notices the packet drop 
-and requests a retransmission. 
+cause unexpected packet drops if the first packet is a response. Nevertheless, the
+communication would continue as soon as the original sender notices the packet drop
+and requests a retransmission.
 
 
 % \subsection{Cross-enterprise Setup}
