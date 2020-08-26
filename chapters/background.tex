@@ -11,7 +11,7 @@ Using a case study we explore how network zoning is realized in modern enterpris
 		\includegraphics[width=.9\textwidth]{usecase.eps}
 	\end{center}
 	\caption{\textit{Network zoning use case for large enterprises. Network zones are
-	realized with heavy use of security middleboxes (e.g., Firewalls).}}
+			realized with heavy use of security middleboxes (e.g., Firewalls).}}
 	\label{fig:usecase}
 \end{figure}
 
@@ -53,14 +53,14 @@ transitions are handled, called Transit Zone.
 
 \begin{figure}[htb]
 	\begin{center}
-		\includegraphics[width=.9\textwidth]{zone_layouts.png}
+		\includegraphics[width=.9\textwidth]{zone_layouts.pdf}
 	\end{center}
 	\caption{\textit{Two ways of structuring network zones. The use of a transit zone on the right side reduces
-	the number of required links.}}
+			the number of required links.}}
 	\label{fig:zone_layout}
 \end{figure}
 
-A transit zone acts like a patch panel allowing zones to be interconnected without the need
+A transit zone acts like a patch panel, allowing zones to be interconnected without the need
 of a dedicated link between each pair of zones (Figure~\ref{fig:zone_layout}).
 The Transit zone sits in the middle of all
 the other zones and mediates access between zones wishing to communicate with each other.
