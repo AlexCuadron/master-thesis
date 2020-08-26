@@ -224,7 +224,10 @@ to approach this problem.
 	      reset point on NV-memory.
 \end{itemize}
 
-Table~\ref{tab:nonce} shows a comparison of the mentioned approaches.
+Table~\ref{tab:nonce} shows a comparison of the mentioned approaches. For this work, we chose the
+approach of pairing an 8 byte counter with 4 bytes of randomness ($\texttt{s} = 32$) to obtain a 12
+byte nonce. An example calculation shows that for $\texttt{r} = 10'000$ resets, the probability of
+a nonce clash is still only $\sim$1.16\%.
 
 % \subsection{DMZ Traffic}
 % So far, we mainly described on how two \tps can securely communicate each other. However,

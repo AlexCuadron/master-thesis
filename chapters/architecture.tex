@@ -94,7 +94,7 @@ method. The \tp finds the corresponding address in its configuration file. This 
 that, prior to first use, there needs to be an out-of-band setup where the \tp is
 configured. This can either be done by the owner of the controller shipping a pre-configured
 machine to the new remote location or by the remote location setting up a machine and
-granting the controller owner management access to the given machine. Bootstraping \tps
+granting the controller owner management access to the given machine. Bootstrapping \tps
 with multiple controllers will be described in~\S\ref{sec:distributedcontroller} with
 practical considerations such as controller discovery, \tp migration, and policy consistency.
 
@@ -142,7 +142,7 @@ forwarding, and verification. A detailed header design follows.
 	\end{center}
 	\caption{Protocol details for data forwarding. The controller frequently updates \tps 
 	with the latest zone transfer policies.}
-																									
+																											
 	\label{fig:protocol}
 \end{figure}
 
@@ -402,14 +402,14 @@ Note that the key exchange
 protocol could be replaced with well-established key exchange protocols, such as IKE
 \cite{rfc7296}.
 
-Ideally, a \tp prefetches all the first-level keys for other \tps it wishes to communicate
-with. The \tp acquires the list of active \tps from its controller and initiates the key
-exchange protocol for these \tps in advance. This is feasible because the number of \tps for
-an enterprise is surely limited; for example, the total number of branches that the Bank of America has in 2019 is approximately 4.6k~\cite{statista2019boa}.
-Each branch would need just one \tp, which means that a \tp needs
-to prefetch 4.6k first-level keys. Nonetheless, on-demand key fetching is also possible.
-In particular, when the current first-level key expires in the middle of on-going data
-transmission or a new \tp joins, a key exchange can be initiated.
+Ideally, a \tp prefetches all the first-level keys for other \tps it wishes to communicate with. The
+\tp acquires the list of active \tps from its controller and initiates the key exchange protocol for
+these \tps in advance. This is feasible because the number of \tps for an enterprise is surely
+limited; for example, the total number of branches that the Bank of America has in 2019 is
+approximately 4.6k~\cite{statista2019boa}. Each branch would need just one \tp, which means that a
+\tp needs to prefetch 4.6k first-level keys. Nonetheless, on-demand key fetching is also possible.
+In particular, when the current first-level key expires in the middle of on-going data transmission
+or a new \tp joins, a key exchange can be initiated.
 
 % second-level key
 \tps are also responsible for second-level key establishment. However, this does not
