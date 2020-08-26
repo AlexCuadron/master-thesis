@@ -28,7 +28,7 @@ Consequently, each zone is defined as:
 \begin{subequations}
 	\begin{align}
 		ASN \times IPsubnet & \mapsto VID,    \\
-		\tp \times VID      & \mapsto zoneID.
+		\tp \times VID      & \mapsto zoneID. 
 	\end{align}
 	\label{eq:zoning}
 \end{subequations}
@@ -142,7 +142,7 @@ forwarding, and verification. A detailed header design follows.
 	\end{center}
 	\caption{Protocol details for data forwarding. The controller frequently updates \tps 
 	with the latest zone transfer policies.}
-																								
+																									
 	\label{fig:protocol}
 \end{figure}
 
@@ -164,14 +164,14 @@ acquires the policy from the controller $C$ as follows:
 \begin{enumerate}
 	\item $\tp_S$ requests a zone-transfer policy from $C$:
 	      \begin{equation}
-		      \tp_S \rightarrow C : H_R~|~H_S
-		      \label{eq:authreq}
+	      	\tp_S \rightarrow C : H_R~|~H_S
+	      	\label{eq:authreq}
 	      \end{equation}
 	\item $C$ replies with the zone-transfer policy:
 	      \begin{equation}
-		      C \rightarrow \tp_S : \\
-		      Z_R~|~Z_S~|~rule~|~\tp_R~|~ExpTime
-		      \label{eq:authrep}
+	      	C \rightarrow \tp_S : \\
+	      	Z_R~|~Z_S~|~rule~|~\tp_R~|~ExpTime
+	      	\label{eq:authrep}
 	      \end{equation}
 \end{enumerate}
 
@@ -204,7 +204,7 @@ new IP header. The new packet layout is formed as follows:
 	\begin{align}
 		EIP                     & = \{H_R~|~H_S~|~payload\}_K,      \\
 		AT                      & = MAC_K(Z_R~|~EIP),               \\
-		\tp_S \rightarrow \tp_R & : \tp_R~|~\tp_S~|~Z_R~|~AT~|~EIP.
+		\tp_S \rightarrow \tp_R & : \tp_R~|~\tp_S~|~Z_R~|~AT~|~EIP. 
 	\end{align}%
 	\label{eq:forwarding}%
 \end{subequations}%
@@ -305,8 +305,8 @@ context of network zoning. The key hierarchy is as follows:
 	      local secret value $S_{\tp}$. The derived symmetric keys are called first-level keys and
 	      are calculated as
 	      \begin{equation}
-		      K_{A \rightarrow B} = PRF_{S_{{TP}_B}}(A),
-		      \label{eq:1stkey}
+	      	K_{A \rightarrow B} = PRF_{S_{{TP}_B}}(A),
+	      	\label{eq:1stkey}
 	      \end{equation}
 	      where $A$ and $B$ stand for the sending and receiving \tp addresses and $PRF$ is a secure pseudo-random 
 	      function. Since only the receiver $B$ can derive this key, it is necessary for 
@@ -317,8 +317,8 @@ context of network zoning. The key hierarchy is as follows:
 	      provide diverse symmetric keys for each zone within the same source and destination
 	      \tp pairs. The second-level keys are calculated as
 	      \begin{equation}
-		      K_{A \rightarrow B:Z} = PRF_{K_{A \rightarrow B}}(Z).
-		      \label{eq:2ndkey}
+	      	K_{A \rightarrow B:Z} = PRF_{K_{A \rightarrow B}}(Z).
+	      	\label{eq:2ndkey}
 	      \end{equation}
 	      $Z$ is the zone ID of the target zone where the destination host resides.
 \end{itemize}
