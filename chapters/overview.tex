@@ -67,7 +67,7 @@ environments. In particular, the following design choices are made:
 		\includegraphics[width=.9\textwidth]{overview.eps}
 	\end{center}
 	\caption{An overview of \name architecture. The inter-domain transit zone interconnects physically
-	and logically distributed network zones with unified security policy enforcement.}
+		and logically distributed network zones with unified security policy enforcement.}
 	\label{fig:overview}
 \end{figure}
 
@@ -78,7 +78,7 @@ environments. In particular, the following design choices are made:
 
 \begin{floatingfigure}[r]{0.5\textwidth}
 	\centering
-	\includegraphics[width=.49\linewidth]{tp_controlflow.png}
+	\includegraphics[width=.49\linewidth]{tp_controlflow.pdf}
 	\caption{Control flow of the Zone Translation Point}
 	\label{archi:flow}
 \end{floatingfigure}
@@ -94,19 +94,19 @@ of our architecture, meaning that everything beyond that point should not be
 modified for ease of deployment and to ensure compatibility with the modern enterprise
 environments.
 
-The main task of \tps is twofold:
-first, they ensure that traffic adheres to a set of allowed zone transitions. For
-a packet originating in a zone and destined for another zone, the transition must be
-explicitly allowed by a policy. Second, \tps enable communication across the WAN without
-losing previously established security information. To this end, \tps embed a tag
-with cryptographically secured zone information into packets before they leave the
-internal network. Furthermore, \tps act as endpoints hiding sensitive information,
-such as internal addresses and the respective zone binding, from external entities.
-We also note that, for a case where zones with the same security requirements and
-functionality are distributed over multiple branch sites (e.g., Zone 1 and 3 in
-Figure~\ref{fig:overview}),
-we consider them as the same logical zone (e.g., the same zone identifier). We call
-this concept zone extension which is not subject to zone authorization.
+The main task of \tps is twofold: first, they ensure that traffic adheres to a
+set of allowed zone transitions. For a packet originating in a zone and destined
+for another zone, the transition must be explicitly allowed by a policy. Second,
+\tps enable communication across the WAN without losing previously established
+security information. To this end, \tps embed an authentication token with
+cryptographically secured zone information into packets before they leave the
+internal network. Furthermore, \tps act as endpoints hiding sensitive
+information, such as internal addresses and the respective zone binding, from
+external entities. We also note that, for a case where zones with the same
+security requirements and functionality are distributed over multiple branch
+sites (e.g., Zone 1 and 3 in Figure~\ref{fig:overview}), we consider them as the
+same logical zone (e.g., the same zone identifier). We call this concept zone
+extension which is not subject to zone authorization.
 
 A logically centralized controller orchestrates the \tps. The controller is owned
 by a single administration domain, and thus the owner of the controller owns all
@@ -189,10 +189,14 @@ denial-of-service for legitimate clients.
 \label{sec:assumptions}
 
 \paragraph{Public Key Infrastructure}
-A given enterprise network has a public key infrastructure (PKI). That is, the enterprise
-creates a trust model for its network infrastructure, acts as a trusted certificate authority
-(CA), and issues certificates for the core systems. Entities can retrieve and verify the
-public keys of the core systems. There are open source projects, such as \fnurl{EJBCA}{https://svn.cesecore.eu/svn/ejbca/trunk/ejbca/} and \fnurl{OpenXPKI}{https://github.com/openxpki/openxpki/}, available for setting up enterprise-grade PKIs.
+A given enterprise network has a public key infrastructure (PKI). That is, the
+enterprise creates a trust model for its network infrastructure, acts as a
+trusted certificate authority (CA), and issues certificates for the core
+systems. Entities can retrieve and verify the public keys of the core systems.
+There are open source projects, such as
+\fnurl{EJBCA}{https://svn.cesecore.eu/svn/ejbca/trunk/ejbca/} and
+\fnurl{OpenXPKI}{https://github.com/openxpki/openxpki/}, available for setting
+up enterprise-grade PKIs.
 
 \paragraph{Secure Cryptography}
 Cryptographic primitives we use in \name are secure; authenticity, integrity, and
