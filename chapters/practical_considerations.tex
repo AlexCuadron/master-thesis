@@ -4,7 +4,6 @@
 In this chapter, we discuss some practical considerations including functional and
 management aspects, along with various deployment scenarios describing how \name can
 be realized on today's enterprise infrastructure.
-% We further discuss about the distributed controller in Appendix~\ref{ssec:distributedcontroller}.
 
 
 \section{NAT Devices}
@@ -27,13 +26,14 @@ keys. Discovering the translated \tp address is also not a problem thanks to
 the controller informing senders about the recipient \tp's address (see Protocol 3 in
 Figure~\ref{fig:protocol}).
 
-\cmnt{A potential operational failure is where multiple \tps are behind the same NAT device.
-	This would lead to \tps having identical keys from the view of remote \tps. One possible solution
-	would be to use a unique \tp identifier instead. Since all such \tps would be under one
-	administration domain, assigning unique \tp identifiers upon bootstrapping is feasible. Then,
-	the \tps convey their identifiers in the AT header field alongside the destination zone ID. This
-	might slightly increase the size of the header, but does not degrade the security of
-the underlying authentication.}
+A potential operational failure occurs where multiple \tps reside behind the same NAT
+device. This would lead to remote \tps deriving identical keys for all the \tps
+behind the NAT. One possible solution would be to use a unique \tp identifier
+instead. Since all such \tps would be under one administration domain, assigning
+unique \tp identifiers upon bootstrapping is feasible. Then, the \tps convey
+their identifiers in the AT header field alongside the destination zone ID. This
+might slightly increase the size of the header, but does not degrade the
+security of the underlying authentication.
 
 
 \section{Tunneling Granularity} %\paragraph{Zone-to-Zone VPN}
@@ -155,7 +155,7 @@ acting as a first rendezvous point.
 The initial information contains the controller's IP address
 ($C$), the corresponding zone ID ($Z_{C}$), and the \tp's IP address behind which the controller
 resides ($\tp_{C}$). If the controller is located in a remote site (i.e., $\tp_{new}
-\neq \tp_{C}$), $\tp_{new}$ should connect with $C$ through $\tp_{C}$. Otherwise, e.g.,
+	\neq \tp_{C}$), $\tp_{new}$ should connect with $C$ through $\tp_{C}$. Otherwise, e.g.,
 $C$ is within the same LAN or in public network, $\tp_{new}$ can directly send $C$ a request
 for control-plane channel establishment.
 
@@ -177,29 +177,27 @@ is also applied when changes in the network are detected.
 	\caption{Comparsion of different nonce creation strategies. \texttt{l} is the length of the
 		nonce, \texttt{s} $\leq$ \texttt{l} is the subset of bits reserved for the random part of the nonce,
 		\texttt{p} is the number of nonces generated and \texttt{r} is the number of unplanned nonce
-	resets.}
+		resets.}
 	\label{tab:nonce}
 	\renewcommand\arraystretch{2}
 	\begin{tabularx}{1.1\linewidth}{|X|X|X|X|X|X|}
 		\hline
-		& \textbf{requires randomness}                       & \textbf{requires non-volatile memory} & \textbf{overlap probability w/o
+		                                        & \textbf{requires randomness}                       & \textbf{requires non-volatile memory} & \textbf{overlap probability w/o
 		resets}                                 & \textbf{overlap probability for \texttt{r} resets} & \textbf{overlap}                                                                                                    \\
 		\hline
-		\textbf{counter only} & no & no  & 0 & 1 & full \\
+		\textbf{counter only}                   & no                                                 & no                                    & 0                               & 1                                  & full \\
 		\hline
 		\textbf{randomness only}                & yes                                                & no                                    &
 		$1-\frac{(2^l)!}{2^{l*p}(2^l-p)!}$
-		& $1-\frac{(2^l)!}{2^{l*p}(2^l-p)!}$                 & partial                                                                                                             \\
+		                                        & $1-\frac{(2^l)!}{2^{l*p}(2^l-p)!}$                 & partial                                                                                                             \\
 		\hline
 		\textbf{counter paired with randomness} & yes                                                & no                                    & 0                               & $1-\frac{(2^s)!}{2^{s*r}(2^s-r)!}$
-		& full                                                                                                                                                                     \\
+		                                        & full                                                                                                                                                                     \\
 		\hline
-		\textbf{reset points} & no & yes & 0 & 0 & -    \\
+		\textbf{reset points}                   & no                                                 & yes                                   & 0                               & 0                                  & -    \\
 		\hline
 	\end{tabularx}%
 \end{table}
-
-\cmnt{uncomment sections below}
 
 % Authenticators are created using an AEAD algorithm with an underlying AES-128 cipher in GCM mode.
 % GCM requires a nonce as input argument to build counters which are then used to create the
@@ -229,6 +227,7 @@ approach of pairing an 8 byte counter with 4 bytes of randomness ($\texttt{s} = 
 byte nonce. An example calculation shows that for $\texttt{r} = 10'000$ resets, the probability of
 a nonce clash is still only $\sim$1.16\%.
 
+\cmnt{uncomment DMZ section}
 % \subsection{DMZ Traffic}
 % So far, we mainly described on how two \tps can securely communicate each other. However,
 % since most of cooperative information systems have public services facing the public Internet,
@@ -253,7 +252,7 @@ cause unexpected packet drops if the first packet is a response. Nevertheless, t
 communication would continue as soon as the original sender notices the packet drop
 and requests a retransmission.
 
-
+\cmnt{uncomment cross-enterprise section}
 % \subsection{Cross-enterprise Setup}
 % \label{ssec:crossconnection}
 % Collaborators may join to an enterprise network. To be able to access highly secure zones

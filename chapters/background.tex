@@ -101,33 +101,6 @@ device---may get a temporal permit to access restricted zones via VPN. The last
 category comprises attack traffic which is to be filtered by the security middleboxes in the
 frontline of defense.
 
-% \begin{table}[t]
-% % \caption{use case table. need to be merged with the fig_usecase}
-% \label{tab:usecase}
-% \centering
-% \resizebox{0.48\textwidth}{!}{
-% 	\begin{tabular}{*4{c}}
-% 	\toprule
-% 	& Between Zones & Through Transit Zone & Within Zone\\
-% 	\midrule
-% 	Inter-domain & \circled{1} $E_1 \leftrightarrow E_4$ 
-% 	& \circled{2} $E_1 \leftrightarrow E_5$ & \circled{3} $E_1 \leftrightarrow E_2$\\
-% 	Intra-domain & \circled{4} $E_5 \leftrightarrow E_6$ 
-% 	& \circled{5} $E_3 \leftrightarrow E_4$ & \circled{6} $E_1 \leftrightarrow E_3$\\
-% 	\bottomrule
-% 	\end{tabular}
-% }
-% \end{table}
-
-% \paragraph{Inter-domain Zone Transfer} % Case 1:
-% \paragraph{Inter-domain Zone Transfer via Transit} % Case 2: 
-% \paragraph{Inter-domain Communication within a Zone} % Case 3: 
-% \paragraph{Local Zone Transfer} % Case 4: 
-% \paragraph{Local Zone Transfer via Transit} % Case 5: 
-% \paragraph{Local Communication within a Zone} % Case 6:
-\cmnt{describe all 6 usecases here?}
-
-
 \section{Challenges}
 \label{sec:challenges}
 
@@ -142,31 +115,28 @@ security level information in transit. This, however, introduces new challenges:
 in deployment per zone, computational overhead, and poor management scalability.
 
 \paragraph{Interoperability}
-Even if security-level information persists in transit, different zones might not be
-built on the same internal protocols (e.g., SPB~\cite{ieee2012spb} vs Trill~\cite{rfc6325})
-which makes it difficult for end systems in different zones to be able to seamlessly communicate
-with each other.
-% A new architecture therefore must be able to understand various network protocols and 
-% interpret them into a local language that all target networks can understand. This means 
-% that the interpretation should preserve the properties of an original protocol, such as 
-% % layer-2 routing decisions. 
-% virtual segmentation.
-% % A flexible design for the architecture to easily embed new protocols also should be considered.
-\cmnt{uncomment text, maybe rephrase}
+Even if security-level information persists in transit, different zones might
+not be built on the same internal protocols (e.g., SPB~\cite{ieee2012spb} vs
+Trill~\cite{rfc6325}) which makes it difficult for end systems in different
+zones to be able to seamlessly communicate with each other. A new architecture
+therefore must be able to understand various network protocols and interpret
+them into a common language that all target networks can understand. This means
+that the interpretation should preserve the properties of an original protocol,
+such as virtual layer 2 segmentation. A flexible design for the architecture to
+easily adopt new protocols is also of importance.
 
 \paragraph{Management Scalability}
-In current local network zoning architectures, administration is being considered a tedious,
-time-consuming, and labor-intensive task. For example, simply adding a new zone might
-require existing policies to be thoroughly reviewed, updated, and re-distributed
-to the local network entities. The management complexity dramatically increases in a
-wide-area network (WAN) environment.
-% For global orchestration across heterogeneous environments, a new architecture therefore
-% must ensure management scalability. That is, network administrators should be able to easily extend 
-% network zones in different physical locations and update policies that reflect these network
-% changes, and be assured that no security loopholes were introduced.
-\cmnt{uncomment text, maybe rephrase}
+In current local network zoning architectures, administration is being
+considered a tedious, time-consuming, and labor-intensive task. For example,
+simply adding a new zone might require existing policies to be thoroughly
+reviewed, updated, and re-distributed to the local network entities. The
+management complexity dramatically increases in a wide-area network (WAN)
+environment. For global orchestration across heterogeneous environments, a new
+architecture therefore must ensure management scalability. That is, network
+administrators should be able to easily extend network zones in different
+physical locations and update policies that reflect these network changes, and
+be assured that no security loopholes were introduced.
 
-% easily scale up resources 
 
 
 

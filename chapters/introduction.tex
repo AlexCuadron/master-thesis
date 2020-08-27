@@ -28,20 +28,23 @@ still remains cumbersome~\cite{ramasamy2011towards,gontarczyk2015blueprint}.
 % > secure communication for inter-domain zones (vxlan, ipsec)
 % > cost inefficiency (expensive lease line and firewalls)
 % > management scalability (key management)
-Bridging geographically distant network zones is very challenging today. In general,
-network zones are created not only for security purposes but also because of geographical,
-operational, or organizational factors. Large enterprises with geographically distributed
-branch networks, and possibly collaborative partners' networks need to be interconnected.
-Given that distant network zones exchange information over an untrusted
-network (e.g., the Internet), there is a risk that the communication exposes security-sensitive
-information during transit. To mitigate
-such threats, administrators leverage additional security mechanisms (e.g.,
-IPsec~\cite{rfc4301} and SSL-VPN~\cite{sun2011advantages})
-which ensure confidentiality
-and integrity of the transmission over the untrusted network by encrypting and authenticating the data with
-securely shared cryptographic keys. Nonetheless, these technologies bring forth new challenges
-such as management scalability~\cite{felsch2018dangers} and compatibility issues with other
-security solutions~\cite{liu2008collaborative}---universal agreement with business partners on building collaborative security infrastructure is often problematic.
+Bridging geographically distant network zones is very challenging today. In
+general, network zones are created not only for security purposes but also
+because of geographical, operational, or organizational factors. Large
+enterprises with geographically distributed branch networks, and possibly
+collaborative partners' networks need to be interconnected. Given that distant
+network zones exchange information over an untrusted network (e.g., the
+Internet), there is a risk that the communication exposes security-sensitive
+information during transit. To mitigate such threats, administrators leverage
+additional security mechanisms (e.g., IPsec~\cite{rfc4301} and
+SSL-VPN~\cite{sun2011advantages}) which ensure confidentiality and integrity of
+the transmission over the untrusted network by encrypting and authenticating the
+data with securely shared cryptographic keys. Nonetheless, these technologies
+bring forth new challenges such as management
+scalability~\cite{felsch2018dangers} and compatibility issues with other
+security solutions~\cite{liu2008collaborative}---universal agreement with
+business partners on building collaborative security infrastructure is often
+problematic.
 
 % the notion of distributed data centers
 
@@ -50,29 +53,30 @@ security solutions~\cite{liu2008collaborative}---universal agreement with busine
 % > simplified zoning architecture (logical transit zone)
 % > cost efficient: firewall x, lease line x
 % > easy key management (management scalability)
-\name is a new network zoning architecture that secures inter-zone communication---which
-operates on layer 3, supporting heterogeneous layer 2 architectures---while ensuring
-scalable cryptographic-key management and flexible security policy enforcement.
-\name flattens the current hierarchically-complex network zone topology into a collection of
-\cmnt{we never show what hierarchy was used before}
-horizontal zones connected to a unified security gateway, called Zone Translation Point
-(\tp), thus simplifying large enterprise networks.
-By interconnecting zones through \tps, complex zone restructuring operations become
-easier with respect to new zone initializations or zone migrations.
-The \tp ensures source authentication, zone transfer authorization, and illegitimate access filtering by
-acting as a secure ingress/egress point for network zones. A logically centralized control unit provides
-management scalability on zone classification and policy enforcement, and mediates cryptographic key
-establishment.
+\name is a new network zoning architecture that secures inter-zone
+communication---which operates on layer 3, supporting heterogeneous layer 2
+architectures---while ensuring scalable cryptographic-key management and
+flexible security policy enforcement. \name flattens the commonly used
+hierarchically-complex network zone topologies into a collection of horizontal
+zones connected to a unified security gateway, called Zone Translation Point
+(\tp), thus simplifying large enterprise networks. By interconnecting zones
+through \tps, complex zone restructuring operations become easier with respect
+to new zone initializations or zone migrations. The \tp ensures source
+authentication, zone transfer authorization, and illegitimate access filtering
+by acting as a secure ingress/egress point for network zones. A logically
+centralized control unit provides management scalability on zone classification
+and policy enforcement, and mediates cryptographic key establishment.
 
-A secure zone transfer is performed in three steps: i) the security gateway acquires
-access policies for each network zone from its controller, ii) the gateway issues a
-cryptographically protected authorization token if a given zone transfer request is
-permitted, and iii) the network forwards only packets with a valid token. By leveraging
-the notion of secure tunneling between two endpoints (i.e., a pair of local and remote \tps),
-confidentiality and integrity of the zone transfer packets are ensured, while keeping the overhead of
-the authentication process small. For scalable key management,
-we employ a key establishment system that enables dynamic key derivation
-and ensures perfect forward secrecy.
+A secure zone transfer is performed in three steps: i) the security gateway
+acquires access policies for each network zone from its controller, ii) the
+gateway issues a cryptographically protected authorization token if a given zone
+transfer request is permitted, and iii) the network forwards only packets with a
+valid token. By leveraging the notion of secure tunneling between two endpoints
+(i.e., a pair of local and remote \tps), confidentiality and integrity of the
+zone transfer packets are ensured, while keeping the overhead of the
+authentication process small. For scalable key management, we employ a key
+establishment system that enables dynamic key derivation and ensures perfect
+forward secrecy.
 
 % Evaluation
 We provide an implementation of \name that ensures secure zone transfer for
