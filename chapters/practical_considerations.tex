@@ -63,7 +63,7 @@ An alternative way of providing authentication is to use one key per zone pair.
 In this model, when a zone transfer is required, a \tp would sign the data on
 behalf of the zones with the corresponding source/destination zone key pair.
 This approach has the benefit that sender and receiver get decoupled as in
-principle any site that posesses the right keys can perform that zone transfer.
+principle any site that possesses the right keys can perform that zone transfer.
 Adding a new site would be as easy as fetching the right keys for the desired
 zone combinations. This process is independent of all the other sites. However,
 a receiver \tp needs to be able to fetch the right keys from the cache, in order
@@ -109,7 +109,7 @@ controller and regional forwarding devices.
 
 The best latency is achieved when each branch site has its own controller. By a
 placement near local \tps, the controller minimizes the \tp-controller latency
-for the zone transfer authorization protocol, allowing instant feedbacks for
+for the zone transfer authorization protocol, allowing instant feedback for
 packet forwarding---we note that inter-controller communication for global
 coordination is commonly not latency sensitive. For the sake of control-plane
 security, the controller resides in a highly restricted zone to which only the
@@ -135,7 +135,7 @@ zones, resulting in unexpected information leakage and eventually administration
 failure. With this in mind, we consider a consensus algorithm with strong
 consistency guarantees~\cite{panda2013cap,phemius2014disco,shi2014giraffe},
 where the security policy is dynamically shared/replicated across the
-distributed controller instances, ensuring concurrent policy enforcements toward
+distributed controller instances, ensuring concurrent policy enforcement towards
 the data-plane devices. There are numerous open-source projects, such as
 \fnurl{Consul}{https://github.com/hashicorp/consul}, \fnurl{Apache
 	ZooKeeper}{https://zookeeper.apache.org/}, and

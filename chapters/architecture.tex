@@ -330,8 +330,7 @@ zones to have different keys even for the same pair of source and destination \t
 Second, it is easy for \tps to efficiently derive the symmetric keys as all the
 required inputs (i.e., local and remote \tp address, and 
 destination zone) are contained in the packet header. In particular, a remote \tp 
-thus can derive the key directly from the packet header without a memory lookup. 
-% \claude{this is only true for the receiving party}
+thus can derive the key directly from the packet header without a memory lookup.
 Finally, since all second-level keys are derived directly from first-level keys,
 the system scales linearly with the number of \tps, not the number of zones, achieving scalability.
 

@@ -114,7 +114,7 @@ deriving the first-level key from the local secret ($\sim$\SI{155}{ns} vs. $\sim
 This is expected when using a high-level language like golang.
 Much faster key derivations are possible when using a state-of-the-art implementation \cite{rot2020piskes}.
 On the other hand, the second-level key derivation takes roughly the same amount of time for sender- and receiver-side.
-This is to be exptected as this derivation step is identical in both cases. In addition, the size of the key table
+This is to be expected as this derivation step is identical in both cases. In addition, the size of the key table
 has no influence on the second-level key derivation since second-level keys are directly derived from first-level keys.
 The results indicate that the total processing time for the full chain of key derivations takes less than 0.5 $\mu$s
 even in very large networks with \SI{100}{K} branch sites, which is negligible considering
@@ -221,7 +221,7 @@ On the other hand, the inter-domain zone transfer degrades the throughput by 44\
 smallest packets. Although the degradation diminishes as the packet size increases, the
 performance still degrades by 24\% for the iMIX traffic. To investigate the main degradation
 factor, we compare the amount of transmitted data (goodput) and the total bits transmitted
-including all the network headers (throughputs) as shown in Figure~\ref{fig:goodput} and
+including all the network headers (throughput) as shown in Figure~\ref{fig:goodput} and
 \ref{fig:throughput}. From the comparison, we observe the followings: i) the inter-domain
 zone transfer achieves a similar throughput to the baseline if the extra headers are considered,
 ii) the performance degradation is caused by not only the additional processing delay but also

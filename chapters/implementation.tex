@@ -11,7 +11,7 @@ Our implementation builds on top of the SCION architecture~\cite{Perrig2017}.
 The implementation decision has been driven by the following reasons: i) SCION provides
 network programmability along with the separation of control and data plane, ii) SCION comes
 with an embedded PKI system that can be utilized for our key management system, and
-iii) the opensource version of the \fnurl{PISKES}{https://github.com/netsec-ethz/scion/tree/scionlab_previousversion/go/lib/drkey} system as well as a
+iii) the open source version of the \fnurl{PISKES}{https://github.com/netsec-ethz/scion/tree/scionlab_previousversion/go/lib/drkey} system as well as a
 software-based gateway working with SCION are available, thus enabling rapid prototyping.
 
 
@@ -160,7 +160,7 @@ Figure~\ref{fig:trie} shows a simplified example of how a trie stores IP subnets
 \end{figure}
 
 While the trie stores all configured IP subnets known to the \tp, another data structure is required
-to store the acutal zone transfer rules, stating which zones, and by extension which subnets, are
+to store the actual zone transfer rules, stating which zones, and by extension which subnets, are
 allowed to communicate with each other---recall that a subnet corresponds to exactly one zone. For this,
 we use a fast in-memory key-value store which maps to a given zone all other zones from which it
 accepts traffic.
