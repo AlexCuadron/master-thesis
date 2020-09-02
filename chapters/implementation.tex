@@ -102,7 +102,7 @@ to create different handler chains for intra-domain and inter-domain zone transf
 		\includegraphics[width=0.9\textwidth]{tp.eps}
 	\end{center}
 	\caption{An overview of the modularized \tp implementation. Major use cases are
-		indicated with colored arrows.}
+	indicated with colored arrows.}
 	\label{fig:tp}
 \end{figure}
 
@@ -155,7 +155,7 @@ Figure~\ref{fig:trie} shows a simplified example of how a trie stores IP subnets
 	\begin{center}
 		\includegraphics[width=0.9\textwidth]{trie.pdf}
 	\end{center}
-	\caption{A partial trie storing the subnets 128.0.0.0/3, 160.0.0.0/4, and 224.0.0.0/4.}
+	\caption{The first few levels of a trie storing the subnets 128.0.0.0/3, 160.0.0.0/4, and 224.0.0.0/4.}
 	\label{fig:trie}
 \end{figure}
 
@@ -181,7 +181,7 @@ implementations of such a key manager must satisfy is depicted in Listing~\ref{l
 \begin{minipage}{\linewidth}
 	\begin{lstlisting}[
 	basicstyle=\footnotesize, language=golang,
-	caption={The KeyManager interface used to by the authentication module to fetch and
+	caption={The KeyManager interface used by the authentication module to fetch and
 	derive keys.},
 	label=lst:keyman,
 ]
@@ -299,7 +299,7 @@ The nonce as well as the previous three token fields and the data to be encrypte
 serve as input to a \textit{Galois/Counter Mode} (GCM) algorithm with an underlying
 \textit{AES-128} block cipher as cryptographic primitive. This mode of operation is widely
 adopted for its performance as well as the capability to do \textit{authenticated encryption
-	with associated data} (AEAD). Here it provides authenticity over the header fields
+with associated data} (AEAD). Here it provides authenticity over the header fields
 (\textit{Type}, \textit{ZoneID}, \textit{TimeStamp}) and the data in \textit{EIP} while
 \textit{EIP} additionally also gets encrypted.
 
