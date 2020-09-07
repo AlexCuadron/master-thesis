@@ -66,7 +66,7 @@ environments. In particular, the following design choices are made:
 	\begin{center}
 		\includegraphics[width=.9\textwidth]{overview.eps}
 	\end{center}
-	\caption{An overview of \name architecture. The inter-domain transit zone interconnects physically
+	\caption{An overview of the \name architecture. The inter-domain transit zone interconnects physically
 		and logically distributed network zones with unified security policy enforcement.}
 	\label{fig:overview}
 \end{figure}
@@ -75,17 +75,9 @@ environments. In particular, the following design choices are made:
 \label{sec:overview}
 
 \paragraph{Entities in \name}
-
-\begin{floatingfigure}[r]{0.5\textwidth}
-	\centering
-	\includegraphics[width=.49\linewidth]{tp_controlflow.pdf}
-	\caption{Control flow of the Zone Translation Point}
-	\label{archi:flow}
-\end{floatingfigure}
-
 Figure~\ref{fig:overview} illustrates an overview of \name.
 Different branch sites of an enterprise are interconnected over a WAN (\eg the Internet). Each site
-contains multiple, logically separated zones connected to the single Zone
+contains multiple, logically separated zones connected to the single zone
 Translation Point (\tp) at the corresponding site. The \tp is a designated gateway
 for zone transfers, operating on layer 3 and interconnecting all zones at a given
 site of the enterprise network. All the traffic towards either internal network or
@@ -93,6 +85,13 @@ WAN, therefore, passes through the \tp. Note that \tps are the endpoints
 of our architecture, meaning that everything beyond that point should not be
 modified for ease of deployment and to ensure compatibility with the modern enterprise
 environments.
+
+\begin{floatingfigure}[r]{0.69\linewidth}
+	\centering
+	\includegraphics[width=.65\linewidth]{tp_controlflow.pdf}
+	\caption{Control flow of the zone Translation Point.}
+	\label{fig:flow}
+\end{floatingfigure}
 
 The main task of \tps is twofold: first, they ensure that traffic adheres to a
 set of allowed zone transitions. For a packet originating in a zone and destined
@@ -139,7 +138,7 @@ channel to enforce the configuration at the individual premises.
 	      the validity of the packet transmission if desired.
 \end{enumerate}
 
-Figure~\ref{archi:flow} shows the control flow of a \tp.
+Figure~\ref{fig:flow} shows the control flow of a \tp.
 
 \section{Threat Model}
 \label{sec:threatmodel}

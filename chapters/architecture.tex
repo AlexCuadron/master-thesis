@@ -1,9 +1,9 @@
 \chapter{Architecture}
 \label{arch}
 
-In this chapter, we present the \name architecture and the underlying protocols in detail. 
-Later, we describe our key-establishment system that enables rapid key derivation 
-and distribution in large networks. 
+In this chapter, we present the \name architecture and the underlying protocols in detail.
+Later, we describe our key-establishment system that enables rapid key derivation
+and distribution in large networks.
 
 \section{\name Bootstrapping}
 \label{sec:bootstrapping}
@@ -28,7 +28,7 @@ Consequently, each zone is defined as:
 \begin{subequations}
 	\begin{align}
 		ASN \times IPsubnet & \mapsto VID,    \\
-		\tp \times VID      & \mapsto zoneID. 
+		\tp \times VID      & \mapsto zoneID.
 	\end{align}
 	\label{eq:zoning}
 \end{subequations}
@@ -44,7 +44,7 @@ deployability. Furthermore, \name does not depend on the specific layer~2 protoc
 at each site.
 
 Every zone is under one ownership, e.g., a company. In case multiple companies
-want to collaborate by sharing certain network zones, it is one company that 
+want to collaborate by sharing certain network zones, it is one company that
 creates and owns the zones and the other companies simply join the network.
 
 \paragraph{Zone Transfer Policy}
@@ -70,8 +70,8 @@ incoming traffic for all established connections.
 
 In an event of conflict where $zone_{src}$ has different
 access authorizations for the $zone_{dst}$, the conflict can be resolved by the $priority$ field.
-That is, the policy with a highest priority would be enforced. 
-If conflicting policies have the same priority, the most recently established policy 
+That is, the policy with a highest priority would be enforced.
+If conflicting policies have the same priority, the most recently established policy
 according to $time$ would be enforced.
 
 % In principle, VLAN is an layer~2 technology, running on a local network. To allow
@@ -79,8 +79,8 @@ according to $time$ would be enforced.
 
 \paragraph{Translation Point Initialization} % about tp
 A \tp is initialized when a new remote site opens, prior to any communication between
-zones. The initialization process has mainly two goals: i) bootstrapping a secure channel 
-with its controller to exchange control-plane messages, and ii) establishing secure tunnels 
+zones. The initialization process has mainly two goals: i) bootstrapping a secure channel
+with its controller to exchange control-plane messages, and ii) establishing secure tunnels
 with other \tps for data transmission.
 % A \tp is initialized when a new remote site opens, prior to any communication between
 % zones. The initialization process has mainly three goals: i) bootstrap a secure channel 
@@ -98,16 +98,16 @@ granting the controller owner management access to the given machine. Bootstrapp
 with multiple controllers will be described in~\S\ref{sec:distributedcontroller} with
 practical considerations such as controller discovery, \tp migration, and policy consistency.
 
-The controller synchronizes with \tps to keep their list of other \tps in the network 
+The controller synchronizes with \tps to keep their list of other \tps in the network
 up-to-date. To this end, the controller frequently pushes a list of potential peers to \tps.
 This can be done either regularly (e.g., on a daily basis) or occasionally
 (e.g., when a new \tp joins the network).
 \tps then establish a secure channel with new \tps. To prevent \tps from using a stale \tp list,
-the shared \tp list is associated with a time to live (TTL) value. 
+the shared \tp list is associated with a time to live (TTL) value.
 
-For ``\textit{trust-even-before-first-use}'', 
-the \tps and controller must be able to verify each 
-other, preventing: i) a legitimate controller pushing information to an unauthorized \tp, 
+For ``\textit{trust-even-before-first-use}'',
+the \tps and controller must be able to verify each
+other, preventing: i) a legitimate controller pushing information to an unauthorized \tp,
 and ii) a legitimate \tp connecting to a bogus controller or \tp under an attacker's control.
 We ensure source authenticity of the \name entities by leveraging PKI-based identities.
 The main idea behind the source authenticity is that all the \tps and controllers obtain
@@ -140,9 +140,9 @@ forwarding, and verification. A detailed header design follows.
 	\begin{center}
 		\includegraphics[width=.9\textwidth]{protocol.eps}
 	\end{center}
-	\caption{Protocol details for data forwarding. The controller frequently updates \tps 
-	with the latest zone transfer policies.}
-																											
+	\caption{Protocol details for data forwarding. The controller frequently updates \tps
+		with the latest zone transfer policies.}
+
 	\label{fig:protocol}
 \end{figure}
 
@@ -150,9 +150,9 @@ forwarding, and verification. A detailed header design follows.
 
 \paragraph{Zone Transfer Authorization}
 End hosts behind a \tp operate as they normally would when they reside in a local network connected
-to a commodity gateway. That is, without any acknowledgment on network changes, a sender $H_S$ 
-sends a packet to the receiver $H_R$. If $H_S$ and $H_R$ are residents of the same subnet 
-(namely the same zone), the packet will be directly steered to the destination by the local 
+to a commodity gateway. That is, without any acknowledgment on network changes, a sender $H_S$
+sends a packet to the receiver $H_R$. If $H_S$ and $H_R$ are residents of the same subnet
+(namely the same zone), the packet will be directly steered to the destination by the local
 forwarding devices. If $H_R$ is in a different subnet (or a remote site) however, the packet
 is first delivered to $\tp_S$ since $\tp_S$ is the gateway of $H_S$. % (\tcircled{1}). 
 
@@ -164,14 +164,14 @@ acquires the policy from the controller $C$ as follows:
 \begin{enumerate}
 	\item $\tp_S$ requests a zone-transfer policy from $C$:
 	      \begin{equation}
-	      	\tp_S \rightarrow C : H_R~|~H_S
-	      	\label{eq:authreq}
+		      \tp_S \rightarrow C : H_R~|~H_S
+		      \label{eq:authreq}
 	      \end{equation}
 	\item $C$ replies with the zone-transfer policy:
 	      \begin{equation}
-	      	C \rightarrow \tp_S : \\
-	      	Z_R~|~Z_S~|~rule~|~\tp_R~|~ExpTime
-	      	\label{eq:authrep}
+		      C \rightarrow \tp_S : \\
+		      Z_R~|~Z_S~|~rule~|~\tp_R~|~ExpTime
+		      \label{eq:authrep}
 	      \end{equation}
 \end{enumerate}
 
@@ -204,12 +204,12 @@ new IP header. The new packet layout is formed as follows:
 	\begin{align}
 		EIP                     & = \{H_R~|~H_S~|~payload\}_K,      \\
 		AT                      & = MAC_K(Z_R~|~EIP),               \\
-		\tp_S \rightarrow \tp_R & : \tp_R~|~\tp_S~|~Z_R~|~AT~|~EIP. 
+		\tp_S \rightarrow \tp_R & : \tp_R~|~\tp_S~|~Z_R~|~AT~|~EIP.
 	\end{align}%
 	\label{eq:forwarding}%
 \end{subequations}%
-The Encrypted original IP payload (EIP) is the original 
-packet including IP header and payload. It is encrypted with a secret key $K$ pre-shared 
+The Encrypted original IP payload (EIP) is the original
+packet including IP header and payload. It is encrypted with a secret key $K$ pre-shared
 between $\tp_S$ and $\tp_R$. By encrypting the original packet and encapsulating it into
 the new IP datagram, we ensure confidentiality on the original payload as well as the
 host identities. We also introduce an Authentication Token (AT) which is placed in front of
@@ -218,11 +218,11 @@ zone identifiers.
 AT provides integrity over the entire packet except the outer IP header field which could
 be modified in transit.
 
-The main difference to the Encapsulating Security Payload (ESP) on IPSec tunnel mode 
+The main difference to the Encapsulating Security Payload (ESP) on IPSec tunnel mode
 is that, rather than having site-to-site symmetric keys, we use site-zone pairwise keys.
-That is, the keys used for every triplet of \{$\tp_{src}~|~\tp_{dst}~|~zoneID_{dst}$\} 
-differs, providing a variety of unique symmetric keys even for the same pair of \tps. 
-In addition, by conveying only $zoneID_{dst}$ in the header, zone pair information, which 
+That is, the keys used for every triplet of \{$\tp_{src}~|~\tp_{dst}~|~zoneID_{dst}$\}
+differs, providing a variety of unique symmetric keys even for the same pair of \tps.
+In addition, by conveying only $zoneID_{dst}$ in the header, zone pair information, which
 could lead to the potential disclosure of the zone structure
 and their transfer rules, is not exposed.
 
@@ -265,37 +265,37 @@ operational resources.
 \section{Key Management}
 \label{sec:keymanagement}
 
-In order for \tps to create and verify authenticators based on symmetric cryptography 
-we need a scheme to distribute keys amongst them. Ideally, the keys used for every 
-triplet of \{$\tp_{src}~|~\tp_{dst}~|~zoneID_{dst}$\} should be different. Additionally, 
-ease of key management is a major concern as key distribution mechanisms in today's 
-Internet, such as IPsec~\cite{rfc2408,rfc2409,rfc4306}, are complicated and introduce 
-management overhead. To alleviate these problems we propose a key management system 
-based on a state-of-art key management system called PISKES \cite{rot2020piskes}.
+In order for \tps to create and verify authenticators based on symmetric cryptography
+we need a scheme to distribute keys amongst them. Ideally, the keys used for every
+triplet of \{$\tp_{src}~|~\tp_{dst}~|~zoneID_{dst}$\} should be different. Additionally,
+ease of key management is a major concern as key distribution mechanisms in today's
+Internet, such as IPsec~\cite{rfc2408,rfc2409,rfc4306}, are complicated and introduce
+management overhead. To alleviate these problems we propose a key management system
+based on a state-of-art key management system called DRKey \cite{rot2020piskes}.
 
-% describe major differences from PISKES
-Major modifications to PISKES introduced for \name key management stem from the following requirements: first,
+% describe major differences from DRKey
+Major modifications to DRKey introduced for \name key management stem from the following requirements: first,
 in the context of network zoning, we require a high degree of confidentiality on top of
-authenticity to protect sensitive information. PISKES mainly targets authenticity for
-network entities, not confidentiality. Second, \name does not trust ASes hosting zones
-for enterprises. PISKES's key establishment relies on the asymmetric key pair issued by
+authenticity to protect sensitive information. DRKey mainly targets authenticity for
+network entities, not confidentiality. Second, \name does not trust \ases hosting zones
+for enterprises. DRKey's key establishment relies on the asymmetric key pair issued by
 each AS, that might cause a \textit{man-in-the-middle} (MITM) vulnerability. Furthermore, it is unlikely that an AS
 wants to have a dedicated key-establishment service for each enterprise, which would require
-additional management overheads and deployments amongst ASes. Third, \name requires key
-management at zone granularity, while PISKES is intended to support key exchanges at a
+additional management overheads and deployments amongst \ases. Third, \name requires key
+management at zone granularity, while DRKey is intended to support key exchanges at a
 higher granularity (e.g., per host or application). Thus, there is a design headroom which
 could simplify the architecture, reducing functional complexity and enhancing management
 scalability.
 
-Driven by this, we redesign the PISKES's key-derivation architecture removing the
+Driven by this, we redesign the DRKey's key-derivation architecture removing the
 AS dependency (i.e., the AS keys and the dedicated key servers at each AS), meaning
 that an enterprise has full control over distributed network zones and does not
-need to trust other ASes for inter-zone networking. Additionally, we simplify the key
+need to trust other \ases for inter-zone networking. Additionally, we simplify the key
 design to work at zone granularity, supporting faster key-derivation while
 providing the same level of security.
 
 \paragraph{Key Hierarchy}
-PISKES introduces a key hierarchy that allows services to dynamically derive symmetric
+DRKey introduces a key hierarchy that allows services to dynamically derive symmetric
 keys in a fast and easy manner. We adapt the concept to support key derivation in the
 context of network zoning. The key hierarchy is as follows:
 
@@ -305,31 +305,31 @@ context of network zoning. The key hierarchy is as follows:
 	      local secret value $S_{\tp}$. The derived symmetric keys are called first-level keys and
 	      are calculated as
 	      \begin{equation}
-	      	K_{A \rightarrow B} = PRF_{S_{{TP}_B}}(A),
-	      	\label{eq:1stkey}
+		      K_{A \rightarrow B} = PRF_{S_{{TP}_B}}(A),
+		      \label{eq:1stkey}
 	      \end{equation}
-	      where $A$ and $B$ stand for the sending and receiving \tp addresses and $PRF$ is a secure pseudo-random 
-	      function. Since only the receiver $B$ can derive this key, it is necessary for 
-	      the other party, in this case $A$, to fetch the shared symmetric key by contacting 
-	      $B$. We note that, in contrast to PISKES, the arrow direction
+	      where $A$ and $B$ stand for the sending and receiving \tp addresses and $PRF$ is a secure pseudo-random
+	      function. Since only the receiver $B$ can derive this key, it is necessary for
+	      the other party, in this case $A$, to fetch the shared symmetric key by contacting
+	      $B$. We note that, in contrast to DRKey, the arrow direction
 	      in the notation indicates the communication direction for which the key is used.
 	\item 2nd-level key: from the first-level keys, second-level keys are derived to
 	      provide diverse symmetric keys for each zone within the same source and destination
 	      \tp pairs. The second-level keys are calculated as
 	      \begin{equation}
-	      	K_{A \rightarrow B:Z} = PRF_{K_{A \rightarrow B}}(Z).
-	      	\label{eq:2ndkey}
+		      K_{A \rightarrow B:Z} = PRF_{K_{A \rightarrow B}}(Z).
+		      \label{eq:2ndkey}
 	      \end{equation}
 	      $Z$ is the zone ID of the target zone where the destination host resides.
 \end{itemize}
 
 % \ml{Maybe use 1st/first, 2nd/second consistently?}
 This hierarchical key structure benefits us in multiple ways: first, it delivers
-key diversity. Since a second-level key is bound to a specific destination zone, it enables 
-zones to have different keys even for the same pair of source and destination \tps. 
+key diversity. Since a second-level key is bound to a specific destination zone, it enables
+zones to have different keys even for the same pair of source and destination \tps.
 Second, it is easy for \tps to efficiently derive the symmetric keys as all the
-required inputs (i.e., local and remote \tp address, and 
-destination zone) are contained in the packet header. In particular, a remote \tp 
+required inputs (i.e., local and remote \tp address, and
+destination zone) are contained in the packet header. In particular, a remote \tp
 thus can derive the key directly from the packet header without a memory lookup.
 Finally, since all second-level keys are derived directly from first-level keys,
 the system scales linearly with the number of \tps, not the number of zones, achieving scalability.
@@ -361,12 +361,12 @@ the source \tp initializes the key exchange protocol by sending a key exchange r
 \begin{subequations}
 	\begin{align}
 		req                     & = A~|~B~|~ValTime, \\
-		\tp_A \rightarrow \tp_B & : \{req\}_{K^-_A}, 
+		\tp_A \rightarrow \tp_B & : \{req\}_{K^-_A},
 	\end{align}
 	\label{eq:req}
 \end{subequations}
 
-\noindent 
+\noindent
 where $ValTime$ represents the validity period of the request. The request is signed with
 the requesting \tp's private key ${K^-_A}$, meaning that the receiving \tp can verify the
 authenticity of the request packet. Recall that, for authenticity of \name entities, each
@@ -382,13 +382,13 @@ The reply packet is formed as follows:
 	\begin{align}
 		K_{A \rightarrow B}     & = PRF_{S_{{\tp}_B}}(A),                          \\
 		rep                     & = \{B~|~K_{A \rightarrow B}~|~ExpTime\}_{K^+_A}, \\
-		\tp_B \rightarrow \tp_A & : \{rep\}_{K^-_B},                               
+		\tp_B \rightarrow \tp_A & : \{rep\}_{K^-_B},
 		\label{eq:rep}
 	\end{align}
 \end{subequations}
-\noindent 
-where $ExpTime$ denotes the expiration time of the first-level key, $K^+_A$ is 
-$\tp_A$'s public key used for encryption, and $K^-_B$ is $\tp_B$'s private key to 
+\noindent
+where $ExpTime$ denotes the expiration time of the first-level key, $K^+_A$ is
+$\tp_A$'s public key used for encryption, and $K^-_B$ is $\tp_B$'s private key to
 sign the reply packet. Finally, the requesting \tp verifies the validity of the reply
 packet and caches $K_{A \rightarrow B}$ until it expires.
 % Note that, the expiration 

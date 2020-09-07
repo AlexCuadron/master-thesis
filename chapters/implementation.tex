@@ -8,11 +8,13 @@ The main development language is \fnurl{golang 1.14.1}{https://golang.org/doc/go
 \fnurl{TLS 1.3}{https://tools.ietf.org/html/rfc8446}. The prototype is publicly \fnote{available}{\url{https://github.com/chaehni/scion/tree/zoning}}.
 
 Our implementation builds on top of the SCION architecture~\cite{Perrig2017}.
-The implementation decision has been driven by the following reasons: i) SCION provides
-network programmability along with the separation of control and data plane, ii) SCION comes
-with an embedded PKI system that can be utilized for our key management system, and
-iii) the open source version of the \fnurl{PISKES}{https://github.com/netsec-ethz/scion/tree/scionlab_previousversion/go/lib/drkey} system as well as a
-software-based gateway working with SCION are available, thus enabling rapid prototyping.
+The implementation decision has been driven by the following reasons: i) SCION
+provides network programmability along with the separation of control and data
+plane, ii) SCION comes with an embedded PKI system that can be utilized for our
+key management system, and iii) the open source version of the
+\fnurl{DRKey}{https://github.com/netsec-ethz/scion/tree/scionlab_previousversion/go/lib/drkey}
+system as well as a software-based gateway working with SCION are available,
+thus enabling rapid prototyping.
 
 
 \section{Translation Point}

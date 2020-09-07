@@ -38,7 +38,7 @@ FOREIGN KEY (dest) REFERENCES Zones(id) ON DELETE CASCADE
 
 The controller database consists of 4 tables: \texttt{Zones}, \texttt{Sites}, \texttt{Subnets},
 and \texttt{Transfers}. The \texttt{Zones} table contains all network zones known to the
-controller, identified by zone IDs. Additionally, a human readable description is attached. The
+controller, identified by zone IDs. Additionally, a human-readable description is attached. The
 \texttt{Sites} table holds all known branch sites with the addresses of the corresponding \tps
 and a textual description. The \texttt{Subnets} table describes the configured IP subnets
 together with their zone membership and the \tp behind which they are located. Finally, the
