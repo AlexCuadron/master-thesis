@@ -87,33 +87,18 @@ processing delay; less than \SI{500}{ns} of additional delay for intra-domain zo
 and approximately $2.5 \sim 3.5 \mu$s for inter-domain zone transfer traffic. We further
 provide in-depth security and practicality analyses.
 
-\cmnt{The remainder of this thesis is structured as follows: Chapter \S\ref{background}
-	describes the goal and challenges of this thesis. In chapter \S\ref{related},
-	existing network zoning solutions are discussed. Chapter \S\ref{overview} presents an overview of \name and chapter \S\ref{arch} then
-	describes the architecture in detail. Chapter \S\ref{impl} describes the process
-	of the implementation. In chapter \S\ref{eval}, the implementation is evaluated
-	based on}
+% The remainder of this thesis is structured as follows: Chapter \S\ref{background}
+% describes the goal and challenges of this thesis. In chapter \S\ref{related},
+% existing network zoning solutions are discussed. Chapter \S\ref{overview} presents an overview of \name and chapter \S\ref{arch} then
+% describes the architecture in detail. Chapter \S\ref{impl} describes the process
+% of the implementation. In chapter \S\ref{eval}, the implementation is evaluated
+% based on
 
 % contributions
-In summary, this thesis introduces \name, a new architecture that enables secure, flexible
+In summary, the core of this thesis is \name, a new architecture that enables secure, flexible
 and viable network zoning and inter-zone communication for large enterprise
 networks. The introduction of an inter-domain transit zone enables flexible and
 cost-efficient zone management by simplifying hierarchical zone structures commonly used
 today. A centralized policy management system  for network zones and an efficient key establishment
 scheme ensure scalability of \name. An implementation of the described
-architecture is available as open source project.
-
-\cmnt{The main contributions of this thesis are the following:
-	\begin{itemize}
-		\item We introduce \name, a new security architecture that enables secure, flexible
-		      and viable network zoning and inter-zone communication for large enterprise
-		      networks.
-		\item We introduce the new notion of an inter-domain transit zone that dramatically
-		      simplifies the current hierarchical zone structure, enabling flexible and cost-efficient
-		      network zone management.
-		\item \name enables network filtering at the edge of the network, such that it suppresses
-		      network overhead in terms of wasted network bandwidth and packet processing time.
-		\item We implement \name as an open source project.
-	\end{itemize}
-}
-
+architecture is available as an open source project.
