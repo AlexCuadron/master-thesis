@@ -1,0 +1,27 @@
+\chapter{Discussion}
+\label{discussion}
+
+\section{Native Function Calling Impact}
+\label{sec:function_calling}
+
+Our experimental analysis compared O1 model configurations with high reasoning effort, evaluating performance both with and without native function calling (FC) capabilities. The integration of FC capabilities yielded substantial improvements, increasing the performance score from 29.1\% to 47.7\%, while simultaneously reducing the average overthinking score from 2.47 to 0.56 -- effectively mitigating the overthinking phenomenon.
+
+However, benchmarking against BCFL \cite{berkeley-function-calling-leaderboard} reveals a more nuanced pattern, where the performance differential between FC and non-FC implementations of O1 in multi-turn environments shows a modest improvement from 36\% to 41\%. This comparatively smaller enhancement suggests that FC implementation alone cannot fully account for the dramatic performance improvements observed in our primary experiments.
+
+\section{The Case of DeepSeek-R1-671B}
+\label{sec:deepseek}
+
+Our analysis of DeepSeek-R1-671B (DS-R1) revealed overthinking scores comparable to those of DeepSeek-V3-671B. This similarity in overthinking behavior may be attributed to DS-R1's training methodology, which did not incorporate extensive reinforcement learning for software engineering tasks. While DS-R1 maintains performance levels similar to DeepSeek-V3 on software engineering benchmarks \cite{deepseekai2025deepseekr1incentivizingreasoningcapability}, our findings suggest that the combination of limited RL training and substantial model scale (671B parameters) contributed to its controlled overthinking behavior.
+
+\section{How to Fix Overthinking}
+\label{sec:solutions}
+
+While our algorithmic interventions demonstrate immediate practical benefits, they primarily address the symptoms rather than the root causes of overthinking. Our analysis suggests that more fundamental solutions might emerge from understanding how models learn to balance reasoning and environmental interaction. The success of function-calling architectures hints at the importance of explicit interaction training, while the effectiveness of limited reinforcement learning points to the role of training methodology.
+
+These insights open important questions for future research:
+\begin{itemize}
+    \item How do these approaches generalize across different domains?
+    \item How can we optimize for environments where environmental interaction carries varying costs?
+\end{itemize}
+
+Understanding these dynamics could help develop more robust solutions that prevent, rather than just mitigate, overthinking behaviors in large reasoning models.

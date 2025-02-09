@@ -1,0 +1,117 @@
+\chapter{Diagnosing Overthinking}
+\label{overthinking}
+
+This chapter presents our framework for identifying and analyzing overthinking behavior in Large Reasoning Models (LRMs). We begin by defining the Reasoning-Action Dilemma that leads to overthinking, then describe the manifestations of this behavior, and finally present our methodology for quantifying it.
+
+\section{The Reasoning-Action Dilemma}
+\label{sec:dilemma_detailed}
+
+We observe that, in agentic decision-making tasks, LRMs constantly face the \emph{Reasoning–Action Dilemma} where they must navigate a fundamental trade-off between:
+\begin{itemize}
+    \item \textbf{Direct interaction with the environment}, where the model executes actions and receives feedback
+    \item \textbf{Internal reasoning}, where the model reasons over hypothetical outcomes before committing to an action
+\end{itemize}
+
+Ideally, an LRM should balance reasoning and action by using internal simulation to refine its choices while leveraging real-world feedback to correct errors. For instance, when debugging a failing test case, a well-balanced model would hypothesize potential issues yet still execute the test opportunely to collect concrete failure signals.
+
+Unfortunately, achieving this balance is inherently challenging. In such settings, feedback is sparse, compelling LRMs to rely heavily on internal simulation to make the most out of every iteration. However, prior research has demonstrated that LRMs exhibit significant vulnerability to knowledge insufficiency, where gaps in understanding can cascade into compounding errors throughout the reasoning process. Consequently, excessive simulation without sufficient external information can ultimately lead to failure. The situation is especially difficult for environments with limited interaction opportunities.
+
+\section{Manifestations of Overthinking}
+\label{sec:manifestations_detailed}
+
+Our investigation into impaired decision-making in AI agents draws from a detailed analysis of agent-environment interactions. These interactions are recorded in what we term trajectories - comprehensive logs that capture the complete sequence of agent actions, environment responses, and (where available) the agent's reasoning process.
+
+Through this analysis, we identified three distinct patterns of \textbf{overthinking}:
+
+\subsection{Analysis Paralysis}
+When faced with challenges, LRMs tend to shift their focus from immediate actions to elaborate future planning. They generate increasingly complex action sequences but struggle to execute them systematically. Rather than addressing immediate errors, they construct intricate plans that often remain unexecuted, leading to a cycle of planning without progress.
+
+\subsection{Rogue Actions}
+We observe cases where agents deliberately try to bypass environmental exploration by generating chains of interdependent actions in a single step. Despite their prior demonstrated awareness of step-by-step interaction requirements, models proceed to construct elaborate action sequences that presume the success of each preceding step, effectively substituting real environmental feedback with internal simulation.
+
+\subsection{Premature Disengagement}
+LRMs sometimes terminate tasks based solely on their internal simulation of the problem space, either through direct abandonment or by delegating hypothetical action sequences. This illustrates how overreliance on internal reasoning can lead to decisions without environmental validation.
+
+\section{Quantifying Overthinking}
+\label{sec:quantifying}
+
+\subsection{Overthinking Score}
+To quantify overthinking behavior, we developed a systematic scoring method using an LLM-based evaluator. This evaluator analyzes model trajectories for the previously described patterns and assigns a score from 0 to 10, with higher scores indicating more severe overthinking behavior. Each score includes a detailed justification explaining which patterns were identified and their severity.
+
+\subsection{Validation Methodology}
+To validate our LLM-based evaluator, we conducted an independent assessment where four expert annotators manually scored 20 randomly selected model traces. The Spearman rank correlation ($p = 0.800$) between human experts and our automated scoring system demonstrated a strong monotonic relationship. This non-parametric correlation measure confirms the reliability of our overthinking measurement methodology.
+
+\section{Evaluation Framework}
+\label{sec:eval_framework}
+
+Our evaluation framework consists of several key components:
+
+\subsection{Trajectory Analysis}
+We analyze complete interaction logs that capture:
+\begin{itemize}
+    \item Model actions and their timing
+    \item Environmental responses
+    \item Model's internal reasoning (where available)
+    \item Success or failure of task completion
+\end{itemize}
+
+\subsection{Pattern Recognition}
+Our framework systematically identifies instances of:
+\begin{itemize}
+    \item Extended reasoning chains without action
+    \item Multiple action generation in single turns
+    \item Premature task termination
+    \item Disregard for environmental feedback
+\end{itemize}
+
+\subsection{Statistical Validation}
+We employ rigorous statistical methods to ensure the reliability of our findings:
+\begin{itemize}
+    \item Spearman correlation for human-automated agreement
+    \item T-tests for comparing different model populations
+    \item Regression analysis for performance impact assessment
+\end{itemize}
+
+\section{Implementation Details}
+\label{sec:implementation}
+
+\subsection{LLM-as-Judge System}
+Our evaluation system uses Claude Sonnet 3.5 as the judge model, configured with:
+\begin{itemize}
+    \item Temperature set to 0 for deterministic scoring
+    \item 200k token context window to process full trajectories
+    \item Structured output format for consistent scoring
+    \item Detailed justification requirements for transparency
+\end{itemize}
+
+\subsection{Scoring Criteria}
+The scoring system evaluates trajectories on multiple dimensions:
+\begin{itemize}
+    \item Balance between reasoning and action
+    \item Appropriate use of environmental feedback
+    \item Efficiency of problem-solving approach
+    \item Completion of necessary validation steps
+\end{itemize}
+
+\section{Limitations and Considerations}
+\label{sec:limitations}
+
+While our framework provides valuable insights into overthinking behavior, it has several limitations:
+
+\subsection{Technical Limitations}
+\begin{itemize}
+    \item Limited access to internal reasoning for some models
+    \item Potential bias in LLM-based evaluation
+    \item Computational cost of trajectory analysis
+    \item Scalability challenges for large datasets
+\end{itemize}
+
+\subsection{Methodological Considerations}
+\begin{itemize}
+    \item Subjectivity in pattern identification
+    \item Complexity of human validation process
+    \item Domain-specificity of current findings
+    \item Generalizability to other tasks
+\end{itemize}
+
+These limitations inform our ongoing work to refine and improve the framework while maintaining its practical utility for understanding and addressing overthinking in LRMs.
