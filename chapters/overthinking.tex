@@ -98,13 +98,9 @@ Our analysis revealed a strong negative correlation between model size and overt
 We investigated the relationship between token consumption and overthinking behavior in the o1 model. We conducted experiments by manipulating the model's reasoning effort parameter between high and low settings, which influences the number of reasoning tokens used \cite{openai_chat_api}. Our analysis revealed an unexpected pattern: in agent-based scenarios, o1 models with low reasoning effort demonstrated 35\% higher overthinking scores compared to their high-effort counterparts. As shown in \cref{tab:o1_model_comparison}, the difference in averaged overthinking scores between the two configurations is statistically significant, suggesting that increased token allocation might paradoxically reduce overthinking in agentic contexts.
 
 \subsection{Function Calling Impact}
-Our experimental analysis compared O1 model configurations with high reasoning effort, evaluating performance both with and without native function calling (FC) capabilities. The integration of FC capabilities yielded substantial improvements:
-\begin{itemize}
-    \item Performance score increased from 29.1\% to 47.7\%
-    \item Average overthinking score reduced from 2.47 to 0.56
-\end{itemize}
+Our experimental analysis compared O1 model configurations with high reasoning effort, evaluating performance both with and without native function calling (FC) capabilities. The integration of FC capabilities yielded substantial improvements across multiple metrics. Most notably, we observed a dramatic increase in performance score from 29.1\% to 47.7\%, accompanied by a significant reduction in average overthinking score from 2.47 to 0.56. These improvements suggest that native function calling capabilities help models maintain a more balanced approach to environmental interaction.
 
-However, benchmarking against BCFL \cite{berkeley-function-calling-leaderboard} reveals a more nuanced pattern, where the performance differential between FC and non-FC implementations of O1 in multi-turn environments shows a modest improvement from 36\% to 41\%. This comparatively smaller enhancement suggests that FC implementation alone cannot fully account for the dramatic performance improvements observed in our primary experiments.
+However, benchmarking against BCFL \cite{berkeley-function-calling-leaderboard} reveals a more nuanced pattern. In multi-turn environments, the performance differential between FC and non-FC implementations of O1 shows a more modest improvement from 36\% to 41\%. This comparatively smaller enhancement suggests that FC implementation alone cannot fully account for the dramatic performance improvements observed in our primary experiments, indicating that other factors may play significant roles in reducing overthinking behavior.
 
 OpenAI has demonstrated that reasoning models exhibit a disproportionate increase in computational costs relative to their performance gains \cite{arcprize2024oai}. Our experiments with SWE-bench Verified dataset confirm this observation: o1 with high reasoning effort achieves a 29.1\% resolution rate at \$1,400, while the low reasoning variant reaches 21.0\% at \$400—a 3.5x cost difference for an 8.1 percentage point improvement in performance.
 
@@ -116,41 +112,24 @@ To address this efficiency gap, we developed an alternative approach: running th
 While our framework provides valuable insights into overthinking behavior, it has several limitations that inform our ongoing research directions:
 
 \subsection{Technical Limitations}
-\begin{itemize}
-    \item \textbf{Limited Access to Internal Reasoning}: Models like o1 exclude reasoning tokens \cite{openai_learning_to_reason_2024}, forcing us to rely on observable behaviors. This limitation may obscure some aspects of the overthinking process.
-    
-    \item \textbf{Potential Bias in LLM-based Evaluation}: While our LLM-as-judge approach shows strong correlation with human evaluators, the use of Claude Sonnet 3.5 as an evaluator may introduce its own biases in overthinking detection.
-    
-    \item \textbf{Computational Cost}: Processing and analyzing 3,908 trajectories requires significant computational resources, particularly for models with high reasoning effort settings.
-    
-    \item \textbf{Scalability Challenges}: The current framework may face challenges scaling to larger datasets or more complex interaction patterns.
-\end{itemize}
+Our framework, while effective, faces several significant technical constraints. A primary challenge stems from limited access to internal reasoning processes, particularly in models like o1 that exclude reasoning tokens \cite{openai_learning_to_reason_2024}. This limitation forces us to rely primarily on observable behaviors, potentially obscuring important aspects of the overthinking process that manifest in internal model states.
+
+The use of LLM-based evaluation, while showing strong correlation with human judgments, introduces its own set of challenges. While Claude Sonnet 3.5 has proven reliable as an evaluator, its use may introduce systematic biases in overthinking detection that could affect our analysis. This concern is particularly relevant given the complex nature of the behaviors we're trying to quantify.
+
+Resource constraints also pose significant challenges to our approach. Processing and analyzing our dataset of 3,908 trajectories requires substantial computational resources, particularly when evaluating models with high reasoning effort settings. This computational burden becomes especially pronounced when dealing with larger language models or more complex interaction patterns. As we look to expand our analysis to larger datasets or more intricate environmental interactions, these scalability challenges may become increasingly significant.
 
 \subsection{Methodological Considerations}
-\begin{itemize}
-    \item \textbf{Pattern Identification}: While we've identified three main patterns of overthinking, there may be other manifestations that our current framework doesn't capture.
-    
-    \item \textbf{Human Validation Process}: The complexity of validating overthinking scores requires significant expert time and may not scale well to larger studies.
-    
-    \item \textbf{Domain Specificity}: Our findings are primarily based on software engineering tasks using SWE Bench Verified. The patterns and implications may differ in other domains.
-    
-    \item \textbf{Model Size Effects}: Our analysis of DeepSeek-R1-671B revealed overthinking scores comparable to DeepSeek-V3-671B, suggesting that model scale and training methodology interact in complex ways that warrant further investigation.
-\end{itemize}
+Our methodology, while systematic, faces several important limitations in its current form. While we've identified three main patterns of overthinking, the complexity of model behavior suggests there may be additional manifestations that our current framework doesn't capture. This potential incompleteness in our pattern identification could affect our ability to fully characterize overthinking behavior in different contexts.
+
+The human validation process presents another significant challenge. Validating overthinking scores requires substantial expert time and attention, with each trajectory requiring careful analysis to ensure accurate assessment. This intensive validation process may not scale well to larger studies, potentially limiting our ability to expand the scope of our analysis.
+
+Domain specificity also presents a methodological concern. Our findings are primarily based on software engineering tasks using SWE Bench Verified, and while these provide a rich environment for studying model behavior, the patterns and implications we've identified may not generalize uniformly to other domains. Different task environments might elicit different manifestations of overthinking, requiring additional validation and potentially different evaluation criteria.
+
+The relationship between model scale and overthinking behavior adds another layer of complexity to our methodology. Our analysis of DeepSeek-R1-671B, which revealed overthinking scores comparable to DeepSeek-V3-671B, suggests that model scale and training methodology interact in ways that are not yet fully understood. This observation highlights the need for more nuanced evaluation approaches that can account for these complex interactions.
 
 \subsection{Future Research Directions}
-Our analysis suggests two promising approaches to mitigate overthinking in LRMs:
+Our analysis suggests two promising approaches to mitigate overthinking in LRMs. First, the success of function-calling architectures hints at the importance of explicit interaction training, though our BCFL benchmarking indicates this alone isn't sufficient for optimal performance. Second, the effectiveness of limited reinforcement learning in DeepSeek-R1-671B points to the crucial role of training methodology in controlling overthinking tendencies.
 
-\begin{itemize}
-    \item \textbf{Native Function-Calling}: The success of function-calling architectures hints at the importance of explicit interaction training, though our BCFL benchmarking suggests this alone isn't sufficient.
-    
-    \item \textbf{Selective Reinforcement Learning}: The effectiveness of limited reinforcement learning in DeepSeek-R1-671B points to the role of training methodology in controlling overthinking tendencies.
-\end{itemize}
-
-These insights open important questions for future research:
-\begin{itemize}
-    \item How do these approaches generalize across different domains?
-    \item How can we optimize for environments where environmental interaction carries varying costs?
-    \item What role does model scale play in overthinking behavior?
-\end{itemize}
+These findings raise several critical questions for future research. A primary concern is how these approaches might generalize across different domains, as the effectiveness of mitigation strategies may vary significantly depending on the specific requirements and constraints of each application area. We must also consider how to optimize these approaches for environments where environmental interaction carries varying costs, balancing the benefits of active exploration against operational constraints. Additionally, the role of model scale in overthinking behavior requires further investigation, as our results suggest complex interactions between model size, architecture, and overthinking tendencies.
 
 Understanding these dynamics could help develop more robust solutions that prevent, rather than just mitigate, overthinking behaviors in large reasoning models. To facilitate further research in this direction, we release our evaluation framework and dataset of 3,908 trajectories, enabling the broader research community to build upon these findings across different environments and architectures.
