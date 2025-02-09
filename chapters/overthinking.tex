@@ -6,11 +6,7 @@ This chapter presents our framework for identifying and analyzing overthinking b
 \section{The Reasoning-Action Dilemma}
 \label{sec:dilemma_detailed}
 
-We observe that, in agentic decision-making tasks, LRMs constantly face the \emph{Reasoning–Action Dilemma} where they must navigate a fundamental trade-off between:
-\begin{itemize}
-    \item \textbf{Direct interaction with the environment}, where the model executes actions and receives feedback
-    \item \textbf{Internal reasoning}, where the model reasons over hypothetical outcomes before committing to an action
-\end{itemize}
+We observe that, in agentic decision-making tasks, LRMs constantly face the \emph{Reasoning–Action Dilemma}. This fundamental trade-off requires models to balance two competing approaches: direct interaction with the environment through action execution and feedback collection, and internal reasoning where models simulate hypothetical outcomes before committing to actions. This dilemma is particularly challenging because both approaches have their merits—environmental interaction provides ground truth but can be costly or risky, while internal reasoning allows for safe exploration but may diverge from reality.
 
 Ideally, an LRM should balance reasoning and action by using internal simulation to refine its choices while leveraging real-world feedback to correct errors. For instance, when debugging a failing test case, a well-balanced model would hypothesize potential issues yet still execute the test opportunely to collect concrete failure signals. This balance is particularly critical in software engineering tasks, where models must understand complex codebases, reason about potential fixes, and validate their solutions through testing.
 
@@ -37,6 +33,8 @@ LRMs sometimes terminate tasks based solely on their internal simulation of the 
 \section{Quantifying Overthinking}
 \label{sec:quantifying}
 
+To systematically study overthinking in LRMs, we developed a comprehensive evaluation framework that combines automated analysis with human validation. Our approach focuses on quantifying the degree to which models favor internal reasoning over environmental interaction, allowing us to measure the impact of overthinking on model performance and identify potential mitigation strategies. Through this framework, we analyzed 3,908 trajectories across 19 different models, revealing significant patterns in how overthinking manifests and affects model behavior in agentic environments.
+
 \subsection{Overthinking Score}
 To quantify overthinking behavior, we developed a systematic scoring method using an LLM-based evaluator. This evaluator analyzes model trajectories for the previously described patterns and assigns a score from 0 to 10, with higher scores indicating more severe overthinking behavior. Each score includes a detailed justification explaining which patterns were identified and their severity. The complete evaluation prompt and scoring criteria can be found in \cref{apx:prompt_overthinking}.
 
@@ -57,35 +55,17 @@ Our findings demonstrate that simple efforts to mitigate overthinking can yield 
 Our evaluation framework consists of several key components designed to systematically analyze overthinking behavior in LRMs. We employ SWE Bench Verified \cite{jimenez2024swebenchlanguagemodelsresolve, swebench_verified} as our benchmark, using the CodeAct agent scaffolding \cite{wang2024executablecodeactionselicit} within the OpenHands framework \cite{wang2024openhandsopenplatformai}. This setup creates a controlled environment where models must balance information gathering with reasoning chains while maintaining context across multiple interactions as illustrated in \autoref{fig:figure3}.
 
 \subsection{Models Evaluated}
-To comprehensively study the phenomenon and influence of overthinking, we consider 19 models across multiple dimensions:
-\begin{itemize}
-    \item \textbf{Reasoning Capabilities}: Both reasoning-optimized models and general-purpose language models
-    \item \textbf{Model Openness}: Proprietary models (e.g., OpenAI o1, Claude Sonnet 3.5) and open-source alternatives (e.g., DeepSeek-R1, Qwen2.5)
-    \item \textbf{Model Size}: From small (1.5B-14B) to large-scale models (32B-671B parameters)
-    \item \textbf{Function Calling Support}: Models with native function calling capabilities (e.g., OpenAI o1, GPT-4o) versus those without
-\end{itemize}
+To comprehensively study the phenomenon and influence of overthinking, we evaluated 19 models selected to represent diverse characteristics across the current LLM landscape. Our selection spans both reasoning-optimized models and general-purpose language models to understand how specialized reasoning training affects overthinking tendencies. We included both proprietary models (such as OpenAI's o1 and Claude Sonnet 3.5) and open-source alternatives (like DeepSeek-R1 and Qwen2.5) to ensure our findings generalize across different development approaches. The models range in size from relatively small (1.5B-14B parameters) to large-scale architectures (32B-671B parameters), allowing us to investigate how model scale influences overthinking behavior. Additionally, we compared models with native function calling capabilities (such as OpenAI o1 and GPT-4o) against those without, to understand how explicit tool-use training affects environmental interaction patterns.
 
 \subsection{Trajectory Analysis}
-We analyze complete interaction logs that capture:
-\begin{itemize}
-    \item Model actions and their timing
-    \item Environmental responses
-    \item Model's internal reasoning (where available)
-    \item Success or failure of task completion
-\end{itemize}
+Our analysis centers on comprehensive interaction logs that we term trajectories. Each trajectory captures the complete temporal sequence of model actions, including precise timing information, along with the corresponding environmental responses. Where available, we also record the model's internal reasoning process, though this is notably absent in some models like the o1 family. These logs culminate in clear success or failure indicators for each task attempt, providing objective metrics for performance evaluation.
 
-Through our analysis of \textbf{3,908 trajectories}, we create a comprehensive open-source dataset to advance research in balancing reasoning and action in agentic environments. Each trajectory is accompanied by its overthinking score and detailed justification.
+Through our analysis of \textbf{3,908 trajectories}, we have created a comprehensive open-source dataset to advance research in balancing reasoning and action in agentic environments. Each trajectory is accompanied by its overthinking score and detailed justification, enabling future researchers to build upon our findings and develop improved strategies for managing the reasoning-action trade-off.
 
 \subsection{Pattern Recognition}
-Our framework systematically identifies instances of:
-\begin{itemize}
-    \item Extended reasoning chains without action
-    \item Multiple action generation in single turns
-    \item Premature task termination
-    \item Disregard for environmental feedback
-\end{itemize}
+Our framework employs a systematic approach to identify key behavioral patterns indicative of overthinking. We focus particularly on extended reasoning chains that lack corresponding actions, as these often signal a model's excessive reliance on internal simulation. We also track instances where models attempt to generate multiple actions in a single turn, bypassing the intended step-by-step interaction process. Additionally, we monitor for premature task termination and cases where models disregard environmental feedback, both of which suggest an overreliance on internal world models rather than real-world interaction.
 
-These patterns are evaluated in the context of software engineering tasks, where we can objectively measure task completion through automated test suites and code validation.
+These patterns are evaluated within the context of software engineering tasks, where we can leverage automated test suites and code validation tools to objectively measure task completion. This approach ensures our pattern recognition is grounded in concrete, measurable outcomes rather than subjective assessments.
 
 \subsection{Statistical Validation}
 Our statistical analysis reveals three key findings about overthinking in language models: its relationship with performance in SWE-bench, its non-equal prevalence across model types, and its practical implications for model selection. We employ rigorous statistical methods to ensure the reliability of our findings.
@@ -102,24 +82,12 @@ The complete analytical framework and results are presented in \cref{evaluation_
 \label{sec:implementation}
 
 \subsection{LLM-as-Judge System}
-Following the LLM-as-a-judge methodology \cite{zheng2023judgingllmasajudgemtbenchchatbot}, our evaluation system uses Claude Sonnet 3.5 as the judge model, configured with:
-\begin{itemize}
-    \item Temperature set to 0 for deterministic scoring
-    \item 200k token context window to process full trajectories
-    \item Structured output format for consistent scoring
-    \item Detailed justification requirements for transparency
-\end{itemize}
+Following the LLM-as-a-judge methodology \cite{zheng2023judgingllmasajudgemtbenchchatbot}, we developed a specialized evaluation system using Claude Sonnet 3.5 as our judge model. The system is configured for maximum reliability and transparency, with temperature set to 0 to ensure deterministic scoring across evaluations. We leverage Claude's 200k token context window to process complete trajectories alongside detailed evaluation criteria, and enforce a structured output format to maintain consistency across assessments. Each evaluation must include detailed justifications, enabling thorough review and validation of the scoring process.
 
-Claude Sonnet 3.5 was selected for its extensive context window, allowing it to process complete trajectories alongside the evaluation criteria. Notably, the evaluator does not have access to the final issue resolution outcome, ensuring that the overthinking assessment remains independent of task success and thereby eliminating potential biases.
+Claude Sonnet 3.5 was selected specifically for its extensive context window and proven reliability in complex evaluation tasks. To prevent bias, we deliberately withhold final issue resolution outcomes from the evaluator, ensuring that overthinking assessments are based purely on behavioral patterns rather than task success. This approach maintains the independence of our overthinking metrics from performance measures, allowing us to analyze their relationship without circular dependencies.
 
 \subsection{Scoring Criteria}
-The scoring system evaluates trajectories on multiple dimensions:
-\begin{itemize}
-    \item Balance between reasoning and action
-    \item Appropriate use of environmental feedback
-    \item Efficiency of problem-solving approach
-    \item Completion of necessary validation steps
-\end{itemize}
+Our scoring system implements a multi-dimensional evaluation approach that considers several key aspects of model behavior. At its core, we assess how well models balance their reasoning processes with concrete actions, looking for evidence of effective decision-making that combines thoughtful analysis with practical implementation. We evaluate the model's ability to appropriately incorporate environmental feedback into its decision-making process, particularly focusing on how it adapts its approach based on system responses. The efficiency of the problem-solving approach is also considered, examining whether models take unnecessarily complex paths or maintain a focused, goal-oriented strategy. Finally, we track the completion of necessary validation steps, ensuring that models don't skip crucial verification processes in their rush to propose solutions.
 
 \subsection{Model Size and Overthinking}
 Our initial hypothesis posited that smaller LRMs would struggle more with environmental comprehension, leading them to rely heavily on internal reasoning chains and thus exhibit increased overthinking behavior. To test this hypothesis, we analyzed two model families across four size variants (32B, 14B, 7B, and 1.5B): the non-reasoning Qwen2.5-Instruct and the reasoning R1-Distill-Qwen.
