@@ -88,12 +88,13 @@ Our framework systematically identifies instances of:
 These patterns are evaluated in the context of software engineering tasks, where we can objectively measure task completion through automated test suites and code validation.
 
 \subsection{Statistical Validation}
-We employ rigorous statistical methods to ensure the reliability of our findings:
-\begin{itemize}
-    \item Spearman correlation for human-automated agreement, showing strong correlation ($p = 0.800$)
-    \item T-tests for comparing different model populations, revealing significant differences between reasoning and non-reasoning models
-    \item Regression analysis for performance impact assessment, demonstrating consistent negative correlation between overthinking and task success
-\end{itemize}
+Our statistical analysis reveals three key findings about overthinking in language models: its relationship with performance in SWE-bench, its non-equal prevalence across model types, and its practical implications for model selection. We employ rigorous statistical methods to ensure the reliability of our findings.
+
+Regression analysis demonstrates a significant negative correlation between overthinking and issue resolution rates for both reasoning and non-reasoning models. Non-reasoning models show a steeper decline in performance as overthinking increases, with a beta coefficient of -25.802 compared to -11.476 for reasoning models. Both relationships are statistically significant (p = 0.031 and p = 0.006 respectively).
+
+A direct comparison reveals that reasoning models consistently exhibit higher overthinking scores—nearly three times higher than non-reasoning models. Reasoning models average 2.320 ± 1.120 on our overthinking scale, while non-reasoning models score 0.865 ± 0.432. This difference is statistically significant (p = 0.019), suggesting a systematic tendency toward overthinking in reasoning-optimized models.
+
+To validate our automated scoring system, we conducted an independent assessment with four expert annotators who manually scored 20 randomly selected model traces. The Spearman rank correlation (p = 0.800) between human experts and our automated system demonstrates a strong monotonic relationship, confirming the reliability of our measurement methodology.
 
 The complete analytical framework and results are presented in \cref{evaluation_framework}. The tools used for the statistical analysis can be found in \cref{stat_framework}.
 
@@ -120,6 +121,11 @@ The scoring system evaluates trajectories on multiple dimensions:
     \item Completion of necessary validation steps
 \end{itemize}
 
+\subsection{Model Size and Overthinking}
+Our initial hypothesis posited that smaller LRMs would struggle more with environmental comprehension, leading them to rely heavily on internal reasoning chains and thus exhibit increased overthinking behavior. To test this hypothesis, we analyzed two model families across four size variants (32B, 14B, 7B, and 1.5B): the non-reasoning Qwen2.5-Instruct and the reasoning R1-Distill-Qwen.
+
+Our analysis revealed a strong negative correlation between model size and overthinking scores: larger models demonstrated less tendency to overthink, as shown in \cref{figure5}. The distinction between reasoning and non-reasoning models becomes particularly pronounced at smaller scales. R1 models exhibit significantly higher overthinking scores (5.157 ± 2.292) compared to their Qwen2.5 counterparts (1.771 ± 0.463), with this gap widening as model size decreases. This difference is statistically significant (t = 2.508, p = 0.046).
+
 \subsection{Token Usage Analysis}
 We investigated the relationship between token consumption and overthinking behavior in the o1 model. We conducted experiments by manipulating the model's reasoning effort parameter between high and low settings, which influences the number of reasoning tokens used \cite{openai_chat_api}. Our analysis revealed an unexpected pattern: in agent-based scenarios, o1 models with low reasoning effort demonstrated 35\% higher overthinking scores compared to their high-effort counterparts. As shown in \cref{tab:o1_model_comparison}, the difference in averaged overthinking scores between the two configurations is statistically significant, suggesting that increased token allocation might paradoxically reduce overthinking in agentic contexts.
 
@@ -131,6 +137,10 @@ Our experimental analysis compared O1 model configurations with high reasoning e
 \end{itemize}
 
 However, benchmarking against BCFL \cite{berkeley-function-calling-leaderboard} reveals a more nuanced pattern, where the performance differential between FC and non-FC implementations of O1 in multi-turn environments shows a modest improvement from 36\% to 41\%. This comparatively smaller enhancement suggests that FC implementation alone cannot fully account for the dramatic performance improvements observed in our primary experiments.
+
+OpenAI has demonstrated that reasoning models exhibit a disproportionate increase in computational costs relative to their performance gains \cite{arcprize2024oai}. Our experiments with SWE-bench Verified dataset confirm this observation: o1 with high reasoning effort achieves a 29.1\% resolution rate at \$1,400, while the low reasoning variant reaches 21.0\% at \$400—a 3.5x cost difference for an 8.1 percentage point improvement in performance.
+
+To address this efficiency gap, we developed an alternative approach: running the low-reasoning variant twice and selecting traces with minimal overthinking scores. This method achieved a 26.3\% resolution rate while consuming only 57\% of the high-reasoning configuration's cost. Our findings suggest that monitoring and controlling overthinking behavior could be a cost-effective strategy for optimizing model performance in real-world applications.
 
 \section{Limitations and Considerations}
 \label{sec:limitations}
