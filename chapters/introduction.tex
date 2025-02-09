@@ -1,104 +1,51 @@
 \chapter{Introduction}
 \label{intro}
 
-% about network security zoning
-Network zoning has long been an essential part of the Internet security infrastructure,
-which logically partitions network and information assets into disjoint segments that share the
-same security requirements and policies, and functional similarities. Zones define the network boundaries
-and their defense
-requirements by stating the entities populating the zones, the entry points into the zones, and
-how traffic is monitored and filtered at these entry points. Informally, these zones
-are realized by a virtualized separation at layer 2 (e.g., IEEE 802.1q~\cite{ieee2018vlan})
-with firewalls at higher levels governing data transfers between zones~\cite{mayer2000fang}.
+Large Reasoning Models (LRMs) represent a breakthrough in AI problem-solving capabilities, yet their effectiveness in interactive environments remains poorly understood. This thesis introduces and analyzes the phenomenon of \textbf{overthinking} in LRMs - a tendency where models prioritize elaborate internal simulations of potential actions over gathering actual environmental feedback. Through extensive experiments on software engineering tasks using SWE Bench Verified, we develop a systematic framework to quantify overthinking behavior on a 0-10 scale, measuring how models balance internal reasoning chains against environmental interaction.
 
-Each zone is identified by a distinct level of trust, and
-forms a trusted/untrusted relationship with other zones~\cite{obregon2015infrastructure}.
-To realize the unidirectional trust model, firewalls are considered to be the most viable
-technology and are widely used in the current practice. However, operating firewalls in
-large enterprises is often challenging for network operators and security architects. The
-access control for network zones might be dynamic, and thus it requires complex
-management schemes to accommodate a myriad of policies. While there are advanced
-technologies such as virtual firewalls~\cite{deng2015vnguard,bakker2016network}, distributed
-security enforcement~\cite{markham2001security,yu2017psi}, and Unified
-Threat Management (UTM)~\cite{qi2007towards}, newly designed to enforce access control polices in extremely
-dynamic networks, network zone management and modeling
-still remains cumbersome~\cite{ramasamy2011towards,gontarczyk2015blueprint}.
+Analysis of \textbf{3,908 trajectories} reveals that overthinking significantly impairs model performance, with strong negative correlations between overthinking scores and issue resolution capabilities (R² = 0.808, p = 0.006 for reasoning models). Notably, LRMs exhibit higher overthinking scores (2.320 ± 1.120) compared to non-reasoning models (0.865 ± 0.432, p = 0.019). Based on our findings, we propose that integrating native function-calling capabilities during training may help models better balance reasoning and action.
 
-% limitations on the current zoning techonologies
-% > secure communication for inter-domain zones (vxlan, ipsec)
-% > cost inefficiency (expensive lease line and firewalls)
-% > management scalability (key management)
-Bridging geographically distant network zones is very challenging today. In
-general, network zones are created not only for security purposes but also
-because of geographical, operational, or organizational factors. Large
-enterprises with geographically distributed branch networks, and possibly
-collaborative partners' networks need to be interconnected. Given that distant
-network zones exchange information over an untrusted network (e.g., the
-Internet), there is a risk that the communication exposes security-sensitive
-information during transit. To mitigate such threats, administrators leverage
-additional security mechanisms (e.g., IPsec~\cite{rfc4301} and
-SSL-VPN~\cite{sun2011advantages}) which ensure confidentiality and integrity of
-the transmission over the untrusted network by encrypting and authenticating the
-data with securely shared cryptographic keys. Nonetheless, these technologies
-bring forth new challenges such as management
-scalability~\cite{felsch2018dangers} and compatibility issues with other
-security solutions~\cite{liu2008collaborative}---universal agreement with
-business partners on building collaborative security infrastructure is often
-problematic.
+\section{The Rise of Large Reasoning Models}
+LRMs, defined as LLMs leveraging reinforcement learning techniques for train-time scaling, represent a breakthrough in AI reasoning capabilities. These models are fundamentally built on the principle that allocating more computational resources at test-time enables deeper reasoning. This approach has proven remarkably effective: by dedicating significant compute to deliberate reasoning steps, these models achieve unprecedented performance through extended chain-of-thought reasoning, systematic exploration of solution strategies, and rigorous self-verification. However, this extended focus on internal reasoning depth raises important questions about how these models balance internal deliberation with action in interactive environments.
 
-% the notion of distributed data centers
+\section{The Challenge of Agentic Environments}
+While traditional AI defined agents broadly as entities that perceive and act upon their environment, the LLM era has evolved toward viewing agency as a spectrum of capabilities. Systems are considered more agentic based on three key factors:
+\begin{itemize}
+    \item Their ability to handle complex environments and pursue goals autonomously
+    \item Their capacity to act with minimal supervision through natural language interfaces
+    \item Their use of advanced design patterns such as tool utilization and dynamic planning
+\end{itemize}
 
-% TP summary
-% > secure zone transfer over wan
-% > simplified zoning architecture (logical transit zone)
-% > cost efficient: firewall x, lease line x
-% > easy key management (management scalability)
-\name is a new network zoning architecture that secures inter-zone
-communication---which operates on layer 3, supporting heterogeneous layer 2
-architectures---while ensuring scalable cryptographic-key management and
-flexible security policy enforcement. \name flattens the commonly used
-hierarchically-complex network zone topologies into a collection of horizontal
-zones connected to a unified security gateway, called zone Translation Point
-(\tp), thus simplifying large enterprise networks. By interconnecting zones
-through \tps, complex zone restructuring operations become easier with respect
-to new zone initializations or zone migrations. The \tp ensures source
-authentication, zone transfer authorization, and illegitimate access filtering
-by acting as a secure ingress/egress point for network zones. A logically
-centralized control unit provides management scalability on zone classification
-and policy enforcement, and mediates cryptographic key establishment.
+These principles have been extensively applied to software engineering tasks, particularly in solving real-world GitHub issues, where numerous research efforts have explored different agent architectures with varying degrees of success. While these efforts have advanced our understanding of AI agents in software engineering, they have not specifically examined how LRMs' unique reasoning capabilities affect their performance in agentic environments—a critical gap our work addresses.
 
-A secure zone transfer is performed in three steps: i) the security gateway
-acquires access policies for each network zone from its controller, ii) the
-gateway issues a cryptographically protected authorization token if a given zone
-transfer request is permitted, and iii) the network forwards only packets with a
-valid token. By leveraging the notion of secure tunneling between two endpoints
-(i.e., a pair of local and remote \tps), confidentiality and integrity of the
-zone transfer packets are ensured, while keeping the overhead of the
-authentication process small. For scalable key management, we employ a key
-establishment system that enables dynamic key derivation and ensures perfect
-forward secrecy.
+\section{The Reasoning-Action Dilemma}
+We observe that, in agentic decision-making tasks, LRMs constantly face the \emph{Reasoning–Action Dilemma} where they must navigate a fundamental trade-off between:
+\begin{itemize}
+    \item \textbf{Direct interaction with the environment}, where the model executes actions and receives feedback
+    \item \textbf{Internal reasoning}, where the model reasons over hypothetical outcomes before committing to an action
+\end{itemize}
 
-% Evaluation
-We provide an implementation of \name that ensures secure zone transfer for
-both intra and inter-domain communication at line rate, while requiring no network-stack
-changes from end hosts. We extensively evaluate this implementation to demonstrate
-the practical viability of \name. The results show that the \tp introduces negligible
-processing delay; less than \SI{500}{ns} of additional delay for intra-domain zone transfer
-and approximately $2.5 \sim 3.5 \mu$s for inter-domain zone transfer traffic. We further
-provide in-depth security and practicality analyses.
+Ideally, an LRM should balance reasoning and action by using internal simulation to refine its choices while leveraging real-world feedback to correct errors. For instance, when debugging a failing test case, a well-balanced model would hypothesize potential issues yet still execute the test opportunely to collect concrete failure signals.
 
-% The remainder of this thesis is structured as follows: Chapter \S\ref{background}
-% describes the goal and challenges of this thesis. In chapter \S\ref{related},
-% existing network zoning solutions are discussed. Chapter \S\ref{overview} presents an overview of \name and chapter \S\ref{arch} then
-% describes the architecture in detail. Chapter \S\ref{impl} describes the process
-% of the implementation. In chapter \S\ref{eval}, the implementation is evaluated
-% based on
+\section{Contributions}
+This thesis makes several key contributions to understanding and addressing the overthinking phenomenon in LRMs:
 
-% contributions
-In summary, the core of this thesis is \name, a new architecture that enables secure, flexible
-and viable network zoning and inter-zone communication for large enterprise
-networks. The introduction of an inter-domain transit zone enables flexible and
-cost-efficient zone management by simplifying the hierarchical zone structures commonly used
-today. A centralized policy management system  for network zones and an efficient key establishment
-scheme ensure scalability of \name. An implementation of the described
-architecture is available as an open source project.
+\begin{enumerate}
+    \item We introduce and formalize the concept of overthinking in LRMs, distinguishing it from related phenomena like hallucination
+    \item We develop a systematic framework for quantifying overthinking behavior, validated against human expert assessments
+    \item We provide extensive empirical evidence of overthinking patterns across different model architectures through analysis of over 3,908 model responses
+    \item We demonstrate practical solutions that can improve model performance by 25\% while reducing computational costs by 43\%
+\end{enumerate}
+
+\section{Thesis Structure}
+The remainder of this thesis is organized as follows:
+
+\begin{itemize}
+    \item Chapter \ref{background} provides essential background on LRMs and agentic environments
+    \item Chapter \ref{overthinking} introduces our framework for diagnosing and quantifying overthinking
+    \item Chapter \ref{evaluation} presents our experimental results and analysis
+    \item Chapter \ref{discussion} discusses implications and potential solutions
+    \item Chapter \ref{conclusion} summarizes our findings and suggests future research directions
+\end{itemize}
+
+To facilitate further research in this direction, we open-source our evaluation framework and comprehensive dataset of annotated model trajectories.

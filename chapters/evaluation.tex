@@ -1,242 +1,31 @@
 \chapter{Evaluation}
 \label{eval}
 
-% With the prototype implementation, we conduct extensive evaluation including 
-% system/network-wide benchmarks. 
+To assess the impact of overthinking in Large Reasoning Models, we analyze their performance in agentic environments using SWE-Bench Verified, comparing reasoning models with their non-reasoning counterparts. Our study aims to answer the following research questions:
+\begin{itemize}
+    \item RQ1: Does overthinking affect performance?
+    \item RQ2: Does its impact affect all models equally?
+    \item RQ3: How to potentially mitigate overthinking?
+\end{itemize}
 
-\section{System Benchmarks}
-\label{sec:systembenchmark}
+\section{Experimental Setup}
+\label{sec:setup}
 
-% \paragraph{Experimental Setup}
-We first conduct microbenchmark tests to evaluate the performance of \tp including the key
-derivation, packet authentication, and authorization. For scrutinize and reproducible evaluation,
-we leverage the standard benchmark library \texttt{testing} officially supported by golang.
-The benchmarks are conducted on commodity machines equipped with an Intel i7 \SI{2.9}{GHz}
-CPU, \SI{16}{GB} memory, and a \SI{1}{GbE} NIC.
+\subsection{Models Evaluated}
+To comprehensively study the phenomenon and influence of overthinking, we consider 19 models across multiple dimensions, including reasoning capabilities, model openness (proprietary vs. open-source), model size, and function calling support. We evaluate both reasoning-optimized models as well as general-purpose language models. Our evaluation spans proprietary models (e.g., OpenAI o1, Claude Sonnet 3.5)~\cite{openai_learning_to_reason_2024,anthropic_claude_3_5} and open-source alternatives (e.g., DeepSeek-R1, Qwen2.5) \cite{qwen2, qwen2.5, deepseekai2025deepseekr1incentivizingreasoningcapability} to ensure broad coverage.
 
-\begin{table}[htb]
-	\begin{minipage}{.47\linewidth}
-		\caption{Benchmark results for the transfer policy lookup (ns).}
-		\label{tab:authorization}
-		\begin{tabularx}{1\linewidth}{X|XXXX}
-			\toprule
-			\# of Policies & No Miss & Src IP Miss & Dest IP Miss & Policy Miss \\
-			\midrule
-			100            & 312     & 100         & 235          & 313         \\
-			\SI{1}{K}      & 399     & 105         & 264          & 394         \\
-			\SI{10}{K}     & 381     & 99          & 262          & 386         \\
-			\SI{100}{K}    & 448     & 101         & 290          & 435         \\
-			\bottomrule
-		\end{tabularx}
-	\end{minipage}\hspace{2em}
-	\begin{minipage}{.47\linewidth}
-		\caption{Sender-side L1 key lookup and L2 key derivation times for different network sizes (ns).}
-		\label{tab:derivation_send}
-		\begin{tabularx}{1\linewidth}{X|XX}
-			\toprule
-			\# of Branches & 1st-level Key & 2nd-level Key \\
-			\midrule
-			100            & 154           & 88            \\	% 618-530=88
-			\SI{1}{K}      & 155           & 97            \\	% 627-530=97
-			\SI{10}{K}     & 161           & 175           \\	% 705-530=175
-			\SI{100}{K}    & 157           & 111           \\	% 641-530=111
-			\bottomrule
-		\end{tabularx}
-	\end{minipage}\vspace{2em}
-	\begin{minipage}{.47\linewidth}
-		\caption{Receiver-side L1/L2 key derivation times for different network sizes (ns).}
-		\label{tab:derivation_rec}
-		\begin{tabularx}{1\linewidth}{X|XX}
-			\toprule
-			\# of Branches & 1st-level Key & 2nd-level Key \\
-			\midrule
-			100            & 188           & 104           \\	% 508-404=104
-			\SI{1}{K}      & 188           & 104           \\	% 508-404=104
-			\SI{10}{K}     & 197           & 103           \\	% 507-404=103
-			\SI{100}{K}    & 188           & 104           \\	% 508-404=104
-			\bottomrule
-		\end{tabularx}
-	\end{minipage}\hspace{2em}
-	\begin{minipage}{.47\linewidth}
-		\caption{Processing times for the encryption/decryption for different packet sizes (ns).}
-		\label{tab:authentication}
-		\begin{tabularx}{1\linewidth}{X|XX}
-			\toprule
-			Packet Size (byte) & Encryption & Decryption \\
-			\midrule
-			100                & 856        & 659        \\
-			500                & 1082       & 747        \\
-			1000               & 1338       & 850        \\
-			1500               & 1557       & 950        \\
-			\bottomrule
-		\end{tabularx}
-	\end{minipage}
-\end{table}
+We also analyze models of varying scale, ranging from small (1.5B-14B) to large-scale models (32B-671B parameters) \cite{deepseek_reasoning_model}, to investigate whether model size influences overthinking tendencies. Additionally, we distinguish between models that natively support function calling (e.g., OpenAI o1, GPT-4o) \cite{openai_function_calling, openai_gpt4o_2024, openai_gpt4o_mini, openai_o1} and those that do not, which allows us to assess whether explicit function calling capabilities reduce overthinking compared to models that rely on prompt-based learning of tool usage. Further details on the models studied can be found in the~\autoref{apx:models},~\autoref{tab:model_comparison}.
 
-\paragraph{Authorization}
-% The \tp's transfer module performs zone transfer authorization for every incoming packets.
-From a technical perspective, the zone transfer authorization consists of two tree searches followed
-by a database lookup.
-Upon receiving the packet metadata from the core module, the transfer module first looks
-up the corresponding zone identifiers for the source and destination addresses, and then
-compares them to the zone transfer policies. In our prototype, these lookups are performed sequentially.
-The authorization performance is therefore dependent on the lookup time of the trees and the policy database.
+\subsection{Scaffoldings}
+To enable tool use, we adopt CodeAct, an open-source single-agent scaffolding built within the OpenHands framework~\cite{openhands}, as models alone cannot directly execute code or edit files~\cite{qwq-32b-preview, openai_o1_mini, openai_o1_system_card_2024, deepseekai2025deepseekr1incentivizingreasoningcapability, sky_t1_2025}. Scaffolding provides a structured execution environment, allowing models to interact with SWE-bench in a controlled and consistent manner. We choose the single-agent approach as it maintains a unified reasoning process, ensuring full context retention throughout execution.
 
-Table~\ref{tab:authorization} shows the benchmark results of database lookups
-for different numbers of policies. Note that each benchmark ran a couple million
-iterations and reports the mean value. The authorization check takes
-approximately 300 to \SI{450}{ns} per packet, which is a notable result
-considering: i) a single lookup consists of two tree searches and a database
-lookup, ii) the result is from a high-level language implementation, and iii)
-the test set scales 1000 times. There might be an authorization abort due to a
-lookup failure that is caused by one of the following three reasons: i) no
-matching source zone ID, ii) no matching destination zone ID, or iii) no matching zone transfer policy.
-As expected, a lookup failure is commonly 3 to 75\% faster than a successful
-lookup, depending on when a lookup failure occurs. This implies that abnormal
-packets with invalid zone transfer requests can be quickly discarded.
+In contrast, multi-agent scaffolds distribute tasks across multiple specialized agents that share an underlying model but operate with distinct prompts and action spaces~\cite{chen2024coderissueresolvingmultiagent,xia2024agentlessdemystifyingllmbasedsoftware, phan2024hyperagentgeneralistsoftwareengineering, allhands_single_agent_systems} which can introduce structural rigidity and lead to information loss during inter-agent communication~\cite{allhands_single_agent_systems}. Similarly, since our goal is to evaluate tool use and in-context memory, we avoid OpenAI's Agentless approach~\cite{openai_o1_system_card_2024, xia2024agentlessdemystifyingllmbasedsoftware}, which follows a fixed three-step process (localization, repair, patch validation) without allowing adaptive decision-making. Therefore, we can ensure all models are evaluated in a standardized, interactive environment.
 
+\section{Overthinking Score Calculation}
+\label{sec:score_calc}
 
-\paragraph{Key Derivation}
-% When a \tp handles an inter-domain zone transfer packet, the \tp need to derive a correct 
-% key for the authentication. As we described in~\S\ref{ssec:keymanagement}, the key derivation
-% comprise with two steps: fetch the first-level key from the cache, and dynamically derive the 
-% second-level key from the first-level key. 
-% To securely forward a zone transfer packet over the public Internet, a \tp first 
-We investigate the key derivation performance. Recall that the key derivation proceeds
-differently for sender and receiver. A receiver is capable of directly deriving the
-second-level key from the local secret (Eq.~\ref{eq:1stkey} \& Eq.~\ref{eq:2ndkey}),
-whereas a sender needs to fetch the first-level key from the key cache before it can derive the second-level key.
-From a scalability perspective, we vary the number of branches (a \tp for each) by increasing the number of stored
-first-level keys up to \SI{100}{K}. Table~\ref{tab:derivation_send} depicts the average time for sender-side key derivation
-measured by a benchmark running more than a million iterations. Table~\ref{tab:derivation_rec} shows the same results for
-receiver-side key derivation. As can be seen, looking up the first-level key from cache is slightly faster than
-deriving the first-level key from the local secret ($\sim$\SI{155}{ns} vs. $\sim$\SI{190}{ns}).
-This is expected when using a high-level language like golang.
-Much faster key derivations are possible when using a state-of-the-art implementation \cite{rot2020piskes}.
-On the other hand, the second-level key derivation takes roughly the same amount of time for sender- and receiver-side.
-This is to be expected as this derivation step is identical in both cases. In addition, the size of the key table
-has no influence on the second-level key derivation since second-level keys are directly derived from first-level keys.
-The results indicate that the total processing time for the full chain of key derivations takes less than 0.5 $\mu$s
-even in very large networks with \SI{100}{K} branch sites, which is negligible considering
-network latency in today's Internet.
+We devise an LLM-based evaluation framework with a carefully designed prompt to systematically assess overthinking behaviors. This evaluator is instructed to recognize overthinking patterns, as described in~\autoref{sec:manifestations}, within model trajectories in agentic scenarios. Based on the identified patterns, the evaluator assigns an overthinking score on a scale from 0 to 10 and provides a detailed justification for the assigned score.
 
-\paragraph{Authentication}
-The additional processing time for packet encryption and decryption is shown in
-Table~\ref{tab:authentication}. In summary, it requires approximately 1.5 to 2 $\mu$s to
-authenticate various sizes of packets. We note that the processing overhead occurs for the majority
-of tunneling technologies that provide confidentiality for data transmission. The processing
-time can be minimized with implementations using the Data Plane Development Kit
-(DPDK)~\cite{dpdk} or by leveraging hardware dedicated to cryptographic
-operations.
+To ensure reliability and consistency, we employ Claude Sonnet 3.5 as the evaluation model and configure it with a temperature of 0 to enforce deterministic scoring, following the LLM-as-a-judge methodology~\cite{zheng2023judgingllmasajudgemtbenchchatbot}. Claude Sonnet 3.5 was selected for its 200k-token context window, allowing it to process complete trajectories alongside the evaluation criteria.
 
-\section{Network Benchmarks}
-\label{sec:networkbenchmark}
-
-\begin{figure}[htb]
-	\begin{minipage}{.47\linewidth}
-		\centering
-		\includegraphics[width=\linewidth]{intra.eps}
-		\caption{Processing time for intra-domain zone transfer.}
-		\label{fig:intra}
-	\end{minipage}\hspace{1em}
-	\begin{minipage}{.47\linewidth}
-		\centering
-		\includegraphics[width=\linewidth]{inter_sender.eps}
-		\caption{Processing time on $TP_S$ for inter-domain zone transfer.}
-		\label{fig:inter_sender}
-	\end{minipage}\vspace{2em}
-	\begin{minipage}{.47\linewidth}
-		\centering
-		\includegraphics[width=\linewidth]{inter_receiver.eps}
-		\caption{Processing time on $TP_R$ for inter-domain zone transfer.}
-		\label{fig:inter_receiver}
-	\end{minipage}\hspace{1em}
-	\begin{minipage}{.47\linewidth}
-		\centering
-		\includegraphics[width=\linewidth]{pps.eps}
-		\caption{Forwarding performance of \tp for various size of packets.}
-		\label{fig:forwarding}
-	\end{minipage}\vspace{2em}
-	\begin{minipage}{.47\linewidth}
-		\centering
-		\includegraphics[width=\linewidth]{cdf_goodput.eps}
-		\caption{CDF of goodput for 1400-bytes of maximum segment size (MMS).}
-		\label{fig:goodput}
-	\end{minipage}\hspace{1em}
-	\begin{minipage}{.47\linewidth}
-		\centering
-		\includegraphics[width=\linewidth]{cdf_throughput.eps}
-		\caption{CDF of throughput including extra header fields.}
-		\label{fig:throughput}
-	\end{minipage}
-\end{figure}
-
-So far, we evaluated the performance of each newly introduced instruction. Since a different
-set of instructions needs to be applied depending on the zone transfer use case, it is also
-important to investigate the overall network performance for handling different types of zone
-transfer packets. We now benchmark the actual network performance for both intra- and inter-domain
-zone transfer cases.
-
-\paragraph{Latency Inflation}
-Figure~\ref{fig:intra} illustrates the network benchmark results for the intra-domain use case.
-Source and destination zones are located within the same local network, such that
-the \tp only needs to parse the packets and perform zone transfer authorization. Since no cryptographic operations are involved,
-the additional latency is negligible, as a single legitimate zone transfer takes $\sim$
-\SI{500}{ns}. Additionally, the results illustrate that the processing overhead of intra-domain traffic
-is independent of the packet size, which is expected since zone transfer authorization operates on the packet header only.
-
-For inter-domain zone transfer cases, we benchmark the overall network inflation during \tp
-operations including packet parsing, key derivation, authorization, and authentication.
-Figure~\ref{fig:inter_sender} and~\ref{fig:inter_receiver} depict the processing delay from
-sender-side \tp and receiver-side \tp respectively.
-From the results, we make the following observations: first, the overall latency inflation that
-\name introduces is insignificant ($\sim 3 \mu$s). Second, \name scales well with the size of the
-network, i.e., the number of branches. We do not see any notable performance degradation
-($\leq$ \SI{200}{ns}) between network sizes. Third, the size of a packet is the primary factor for the latency increment
-as expected for all data-plane devices. The packet size has a small latency incremental factor of
-1.28 (i.e, 2.5 $\mu$s to 3.2 $\mu$s). Lastly, we observe no significant bias in network
-performance between sender-side and receiver-side \tps.
-
-
-\paragraph{Forwarding Performance}
-We further investigate the actual forwarding performance for various packet sizes (\SI{128}{B},
-\SI{256}{B}, \SI{512}{B}, \SI{1024}{B}) including a representative mixture of Internet traffic
-(iMIX)~\cite{rfc6985}; we select the minimum packet size of 128 bytes instead of 64 bytes which is
-commonly considered to be the smallest packet size, because \name's tunneling requires an at least 116
-bytes long frame, i.e., Outer L3 header (40 bytes), AT header
-(36 bytes), and EIP (40 bytes). Figure~\ref{fig:forwarding} shows the results. The
-baseline is the forwarding performance without \tp operations. The other bars represent the
-forwarding performance for intra-domain zone transfer (with authorization only) and inter-domain
-zone transfer (with authorization and authentication) respectively.
-
-For 128-byte packets which demonstrates the highest packet rate, and thus requiring the most
-extreme packet processing, the intra-domain zone transfer exhibits a throughput degradation
-of only 11\%. For other packet sizes we achieve a throughput of 97 $\sim$ 100\%. These
-results are expected because \tps only perform zone authorization for intra-domain zone transfer
-packets, which increases processing delay by $\leq$ 500 ns. Considering that
-a typical intra-domain packet transmission usually shows a few milliseconds of latency, the
-additional delay is negligible.
-
-On the other hand, the inter-domain zone transfer degrades the throughput by 44\% for the
-smallest packets. Although the degradation diminishes as the packet size increases, the
-performance still degrades by 24\% for the iMIX traffic. To investigate the main degradation
-factor, we compare the amount of transmitted data (goodput) and the total bits transmitted
-including all the network headers (throughput) as shown in Figure~\ref{fig:goodput} and
-\ref{fig:throughput}. From the comparison, we observe the followings: i) the inter-domain
-zone transfer achieves a similar throughput to the baseline if the extra headers are considered,
-ii) the performance degradation is caused by not only the additional processing delay but also
-transmission delay of the extra headers, and therefore iii) \name performs similar to
-today's tunneling applications while providing security policy enforcement for network
-zoning.
-
-
-
-% \subsection{Overhead Measurements}
-% \label{ssec:overhead}
-
-% \paragraph{Bandwidth Overhead}
-
-% \paragraph{Memory Overhead}
-
-% \paragraph{Control-plan Overhead}
-
+Notably, the evaluator does not have access to the final issue resolution outcome, ensuring that the overthinking assessment remains independent of task success and thereby eliminating potential biases. The complete evaluation prompt and scoring criteria can be found in \cref{apx:prompt_overthinking}.

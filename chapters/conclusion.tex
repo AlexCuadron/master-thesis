@@ -1,45 +1,8 @@
 \chapter{Conclusion}
 \label{concl}
 
-\section{Summary}
-\label{ssummary}
+In this work, we present the first comprehensive empirical study of Large Reasoning Models (LRMs) in agentic environments. We identify a fundamental challenge: the \textbf{Reasoning-Action Dilemma}, in which models must balance environmental engagement against internal reasoning about potential actions. Our analysis reveals that LRMs consistently favor internal simulation over environmental interaction, a behavior we define as \textbf{overthinking}.
 
-Network zoning has long been recognized as the cornerstone of secure network
-operation and management. In the current practice, operators realize network
-zones with network segmentation technologies and security middleboxes. As
-information systems become more dynamic from a topological, operational, and
-functional perspective, however, the conventional network-zoning architectures
-face new challenges in terms of scalability and flexibility. In this thesis, we
-have shown that lightweight policy enforcement for inter-zone communication is
-achievable. Following a constructive approach with a cryptographic foundation,
-it is possible to create a proactive alternative to the mostly reactive systems
-presently used in network zoning. In conjunction with \name, verification based
-on firewalls becomes simpler because firewalls would only process a limited
-amount of (filtered) traffic. \name consequently reduces the number of
-management points of distributed networks while retaining a high degree of
-security.
+Through our systematic evaluation framework, we analyzed 3,908 trajectories using a novel overthinking score metric. Our findings demonstrate a strong correlation between overthinking and task failure rates, with reasoning models showing particularly high vulnerability to this phenomenon compared to their non-reasoning counterparts.
 
-\section{Future Work}
-\label{sfuture}
-
-The work presented in this thesis can be extended along different axes. For
-one, it would be interesting to explore how an architecture like \name can be
-used to provide privacy for inter-domain data transmissions. \name provides
-confidentiality and integrity on the data in transit. However, certain traffic
-patterns and packet sizes could still allow an attacker to draw conclusions about
-what sort of traffic is being sent (\eg sensor data, control messages, file
-transmissions) and which security zones are located
-at a given site. If privacy is a concern, a first step could be to extend \tps
-with new modules that pad all packets to the full MTU length and insert mock
-traffic, such that traffic patterns are hidden.
-
-Another direction in which this work could be extended is the implementation
-of the \tp gateway in a high-performance language. Various operations---in
-particular cryptographic ones---would benefit from an optimized
-implementation on dedicated network hardware.
-
-Lastly, it would be interesting to explore how certain properties of local
-networks can be conveyed across the WAN to a remote network. For example, technologies such as
-SPB and TRILL have support for layer 2 multipathing, the corresponding control
-messages are, however, not transmitted by \name. A deeper interoperability of
-different protocols across network boundaries would certainly be a desirable property.
+Our research demonstrates that even simple interventions to mitigate overthinking can yield substantial benefits: a 43\% reduction in inference costs while improving resolution rates by 25\%. These results, combined with our observations about the effectiveness of function-calling capabilities and targeted reinforcement learning, suggest promising directions for developing more efficient and environmentally grounded reasoning models.

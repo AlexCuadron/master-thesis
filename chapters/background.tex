@@ -1,141 +1,100 @@
 \chapter{Background}
 \label{background}
 
-Using a case study we explore how network zoning is realized in modern enterprise networks, and later we derive the main challenges we confront.
+This chapter provides essential background on Large Reasoning Models (LRMs) and agentic environments, establishing the foundation for understanding the overthinking phenomenon we explore in this thesis.
 
-\section{Case Study}
-\label{sec:casestudy}
+\section{Large Reasoning Models}
+\label{sec:lrm}
 
-\begin{figure}[htb]
-	\begin{center}
-		\includegraphics[width=.9\textwidth]{usecase.pdf}
-	\end{center}
-	\caption{\textit{Network zoning use case for large enterprises. Network zones are
-			realized with heavy use of security middleboxes (e.g., Firewalls).}}
-	\label{fig:usecase}
-\end{figure}
+\subsection{Test-time Computation Scaling}
+Test-time computation scaling enhances model performance by allocating additional computational resources during inference. This approach enables LLMs to exceed their baseline training performance, particularly in autonomous agent behaviors and complex reasoning tasks \cite{qu2024recursiveintrospectionteachinglanguage, singh2024humandatascalingselftraining, wei2023chainofthoughtpromptingelicitsreasoning}. Recent studies reveal that training smaller models with reduced computational resources, then augmenting their performance during testing, can yield superior results compared to larger models \cite{snell2024scalingllmtesttimecompute, wu2024inferencescalinglawsempirical}. The O1-mini model exemplifies this approach, surpassing O1-preview's performance on CodeForces \cite{codeforces} and nearly matching the full O1-model's capabilities \cite{openai_learning_to_reason_2024, openai_O1_mini}.
 
-Most enterprise networks have embraced the notion of layered security classification,
-that can be broadly split into intranet, extranet, and opennet~\cite{ramasamy2011towards}.
-The opennet is the least trusted network (e.g., the Internet) which is an inhospitable region
-where live threats exist, whereas the intranet is the most trusted network hosting
-business-critical systems and sensitive information. Since the intranet has rigorous access
-control mechanisms to protect information assets from exposure to the opennet, enterprises are
-forced to operate another security layer (extranet, also known as demilitarized zone or DMZ) in between,
-which exposes the publicly accessible services to the opennet, while reducing the attack surface of the intranet.
+\subsection{Parallel Approaches}
+Multiple sampling approaches generate several candidate solutions and select the optimal one through various methods:
+\begin{itemize}
+    \item Majority voting \cite{huang2022largelanguagemodelsselfimprove}
+    \item Best-of-N search \cite{amini2024variationalbestofnalignment}
+    \item Sentence-level beam search \cite{graves2012sequencetransductionrecurrentneural}
+    \item External verification \cite{lee2024prometheusvisionvisionlanguagemodeljudge, xiong2024llavacriticlearningevaluatemultimodal, brown2024largelanguagemonkeysscaling}
+\end{itemize}
 
-Over time, these layered network structures have become more sophisticated~\cite{obregon2015infrastructure}
-due to extreme changes in network environments---diverse demands from customers, partners
-and employees accessing enterprise networks with a variety of devices.
-As a result, many enterprise networks
-comprise a large number of zones defined by operational, organizational, and most
-importantly security factors. Figure~\ref{fig:usecase} depicts a real-world use case for
-network zones running on inter-domain level with multiple involved autonomous systems (\ases). They
-can be categorized into three main types.
+While these approaches show promise in certain domains, they face significant limitations in complex software engineering tasks. Majority voting, though effective for standardized problems, struggles with the open-ended nature of SWE-Bench tasks. Best-of-N search, while comprehensive in generating complete solution candidates, introduces substantial complexity in accuracy evaluation. Similarly, sentence-level beam search operates at too fine granularity for effective response quality assessment in software repair contexts \cite{xu2024llavaO1letvisionlanguage}, where the broader solution structure is crucial for success.
 
-\paragraph{Intra-domain Zone Transfer}
-% 1. direct transfer
-% 2. through trasit zone
-Within a local network, multiple devices such as servers, databases, and hosts are connected
-through network switches. These devices are assigned with a unique IP address that belongs
-to a logically isolated network zone. These zones commonly consist of multiple subnets,
-often realized with a layer 2 virtualization technology (e.g., VLAN). Each zone is protected
-by a set of security middleboxes, e.g., firewalls, intrusion-prevention systems (IPS),
-and intrusion-detection systems (IDS), which enforce predefined security policies for all
-traffic passing through.
+\subsection{Sequential Approaches}
+LLMs rely on step-by-step reasoning through self-prompting methods, particularly Chain-of-Thought (CoT) \cite{wei2023chainofthoughtpromptingelicitsreasoning}, to implement problem-solving strategies such as:
+\begin{itemize}
+    \item Systematic Analysis (SA)
+    \item Divide and Conquer (DC)
+    \item Self-Refinement (SR)
+\end{itemize}
 
-To maintain the zone-based trust model, access permission to one zone is not considered to be
-valid for other zones. That is, an entity must obtain access permissions from all zones on the
-path when accessing a non-adjacent zone. This trust model however often complicates policy management
-and enforcement, especially for large enterprise networks.
-To resolve this complication, the current practice introduces the notion of a dedicated zone in which zone
-transitions are handled, called Transit Zone.
+Research shows that CoT-based approaches predominantly utilize DC and SR strategies \cite{xu2024llavaO1letvisionlanguage, chu2024navigateenigmaticlabyrinthsurvey}, a pattern also observed in the O1 family of models which builds upon CoT reasoning \cite{openai_reasoning_docs, wu2024comparativestudyreasoningpatterns}. However, CoT's susceptibility to generating incorrect reasoning paths \cite{wei2023chainofthoughtpromptingelicitsreasoning} becomes particularly problematic in repository-level code agents, where models must interact with complex environments and require robust planning and reasoning capabilities \cite{zheng2024makeslargelanguagemodels}.
 
-\begin{figure}[htb]
-	\begin{center}
-		\includegraphics[width=.9\textwidth]{zone_layouts.pdf}
-	\end{center}
-	\caption{\textit{Two ways of structuring network zones. The use of a transit zone on the right side reduces
-			the number of required links.}}
-	\label{fig:zone_layout}
-\end{figure}
+\section{Agentic Environments}
+\label{sec:agentic}
 
-A transit zone acts like a patch panel, allowing zones to be interconnected without the need
-of a dedicated link between each pair of zones (Figure~\ref{fig:zone_layout}).
-The Transit zone sits in the middle of all
-the other zones and mediates access between zones wishing to communicate with each other.
-It is commonly comprised of only forwarding devices (e.g., switches), interconnecting the
-attached zones via various ingress/egress points on which security middleboxes enforce the
-security policies. In a nutshell, the Transit Zone reduces the depth of zone hierarchies and
-thus simplifies the network zone design and management.
+\subsection{OpenHands Framework}
+The OpenHands framework provides agents like CodeAct \cite{wang2024executablecodeactionselicit} with tools to interact with the environment. These tools and their usage are provided in-context at the beginning of each prompt, followed by an example of how to interact with the environment using those tools \cite{wang2024openhandsopenplatformai}. 
 
-\paragraph{Inter-domain Zone Transfer}
-% bridging sites is expensive
-To ensure that geographically distributed zones can securely communicate with each other,
-enterprises employ various networking technologies. The most common choice is connecting
-two remote sites with a physical private line, (e.g., layer 2 circuit). Enterprises
-can lease these lines from Internet service providers and make use of them to bridge local
-networks. However, purchasing private lines is costly and might come along
-with trust issues towards the service provider.
+If the model supports native function calling \cite{openai_function_calling}, these tool descriptions are given through the API and no additional in-context specification is provided. If the model doesn't support native function calling, the successful execution of the action depends on the structured output capabilities of the model. If the tool call is not properly formatted, the environment will return an error and the model will have to adapt it.
 
-An alternative is a virtual private
-network (VPN). A VPN uses cryptographic primitives to create a virtual tunnel between two
-local networks, preventing information leakage during transmission over the public Internet.
-While the VPN technology ensures data confidentiality, typically yet another layer of overlay
-protocols is required to achieve virtual separation of zones. The use of such overlay
-protocols, however, has the disadvantage that all interconnected sites need to deploy the same
-protocol since such protocols generally do not offer interoperability.
+\subsection{SWE-Bench}
+SWE Bench is a challenging benchmark that requires agents to complete real-world software engineering (SWE) tasks. The agent is given a repository address and an issue description and may need to take many actions to complete the task by producing a final patch \cite{jimenez2024swebenchlanguagemodelsresolve}.
 
-\paragraph{Traffic from the Internet}
-% 1. normal customer
-% 2. authorised user (employee)
-% 3. attacker
-Traffic not originating in cooperative (trusted) networks can be classified
-into the following three types: i) public traffic, ii) authorized traffic, and iii)
-malicious traffic. The first case covers normal customers who access the enterprise's
-public services, e.g., Web servers. This traffic in general ends up at the demilitarized zone
-(DMZ) hosting only public services that require exposure to Internet.
-The second case refers to the traffic coming from temporarily authorized devices. For example,
-a legitimate employee outside the enterprise's premises---working from home with a personal
-device---may get a temporal permit to access restricted zones via VPN. The last
-category comprises attack traffic which is to be filtered by the security middleboxes in the
-frontline of defense.
+SWE Bench Verified \cite{swebench_verified} is a human-validated subset of SWE Bench \cite{jimenez2024swebenchlanguagemodelsresolve} that more reliably evaluates AI models' ability to solve real-world issues. It contains a validated set of 500 tasks and addresses several limitations of SWE Bench including:
+\begin{itemize}
+    \item Incorrect grading of correct solutions
+    \item Under-specified problem statements
+    \item Overly specific unit tests
+\end{itemize}
 
-\section{Challenges}
-\label{sec:challenges}
+This helps ensure we accurately grade model capabilities \cite{openai_o1_system_card_2024, swebench_verified}. Due to the cost of executing reasoning models \cite{openai_pricing} on multi-stage agentic tasks, we limited our experiments to 200 randomly sampled issues from SWE Bench Verified.
 
-\paragraph{Secure Zone Transfer}
-Transmitting security-sensitive data between zones in different physical locations (e.g.,
-data center to branch site) over the public Internet poses a challenge.
-Security level information is lost in transit, requiring that the data is re-authenticated and
-filtered again on the receiving site even though source and destination could be part of the
-same logical zone.
-Today's overlay protocols are often used to overcome the restriction of losing
-security level information in transit. This, however, introduces new challenges: difficulties
-in deployment per zone, computational overhead, and poor management scalability.
+\section{The Reasoning-Action Dilemma}
+\label{sec:dilemma}
 
-\paragraph{Interoperability}
-Even if security-level information persists in transit, networks of different branch sites might
-not be built on the same internal protocols (e.g., SPB~\cite{ieee2012spb} vs
-Trill~\cite{rfc6325}) which makes it difficult for end systems in different
-zones to be able to seamlessly communicate with each other. A new architecture
-therefore must be able to understand various network protocols and interpret
-them into a common language that all target networks can understand. This means
-that the interpretation should preserve the properties of an original protocol,
-such as virtual layer 2 segmentation. A flexible design for the architecture to
-easily adopt new protocols is also of importance.
+\subsection{Balancing Internal and External Information}
+In agentic environments, models must constantly balance between:
+\begin{itemize}
+    \item Using their internal knowledge and reasoning capabilities
+    \item Gathering new information through environmental interaction
+\end{itemize}
 
-\paragraph{Management Scalability}
-In current local network zoning architectures, administration is being
-considered a tedious, time-consuming, and labor-intensive task. For example,
-simply adding a new zone might require existing policies to be thoroughly
-reviewed, updated, and re-distributed to the local network entities. The
-management complexity dramatically increases in a wide-area network (WAN)
-environment. For global orchestration across heterogeneous environments, a new
-architecture therefore must ensure management scalability. That is, network
-administrators should be able to easily extend network zones in different
-physical locations and update policies that reflect these network changes, and
-be assured that no security loopholes were introduced.
+This creates a fundamental tension: while internal reasoning can help models plan more effectively, over-reliance on internal simulation can lead to decisions based on incomplete or incorrect assumptions about the environment.
+
+\subsection{The Cost of Overthinking}
+Overthinking manifests when models favor extended internal reasoning chains over environmental interaction. This behavior can lead to several issues:
+\begin{itemize}
+    \item Wasted computational resources on unnecessary reasoning steps
+    \item Missed opportunities to gather crucial environmental feedback
+    \item Decisions based on outdated or incorrect assumptions
+    \item Premature task termination without proper validation
+\end{itemize}
+
+Understanding and addressing this balance is crucial for developing more effective AI systems that can operate efficiently in real-world environments.
+
+\section{Evaluation Frameworks}
+\label{sec:frameworks}
+
+\subsection{LLM-as-Judge Methodology}
+To systematically evaluate overthinking behavior, we employ the LLM-as-judge methodology \cite{zheng2023judgingllmasajudgemtbenchchatbot}, which involves:
+\begin{itemize}
+    \item Using a separate LLM to evaluate model behavior
+    \item Providing clear evaluation criteria and rubrics
+    \item Ensuring consistent scoring across different trajectories
+    \item Validating automated assessments against human expert judgments
+\end{itemize}
+
+\subsection{Statistical Analysis Framework}
+Our analysis employs several statistical measures to ensure robust findings:
+\begin{itemize}
+    \item Coefficient of Determination ($R^2$) to measure correlation strength
+    \item P-values to assess statistical significance
+    \item Beta coefficients to quantify effect sizes
+    \item T-tests to compare different model populations
+\end{itemize}
+
+These frameworks provide a rigorous foundation for our analysis of overthinking in LRMs, enabling us to draw reliable conclusions about its impact on model performance.
 
 
 
