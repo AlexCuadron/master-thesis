@@ -1,7 +1,7 @@
 \chapter{Diagnosing Overthinking}
 \label{overthinking}
 
-This chapter presents our framework for identifying and analyzing overthinking behavior in Large Reasoning Models (LRMs). We begin by defining the Reasoning-Action Dilemma that leads to overthinking, then describe the manifestations of this behavior, and finally present our methodology for quantifying it.
+This chapter presents our framework for identifying and analyzing overthinking behavior in Large Reasoning Models (LRMs). We begin by defining the Reasoning-Action Dilemma that leads to overthinking, then describe the manifestations of this behavior, and finally present our methodology for quantifying it. Through our analysis of 3,908 trajectories, we demonstrate that overthinking represents a significant challenge in agentic environments, particularly affecting models specifically trained for reasoning tasks.
 
 \section{The Reasoning-Action Dilemma}
 \label{sec:dilemma_detailed}
@@ -12,39 +12,58 @@ We observe that, in agentic decision-making tasks, LRMs constantly face the \emp
     \item \textbf{Internal reasoning}, where the model reasons over hypothetical outcomes before committing to an action
 \end{itemize}
 
-Ideally, an LRM should balance reasoning and action by using internal simulation to refine its choices while leveraging real-world feedback to correct errors. For instance, when debugging a failing test case, a well-balanced model would hypothesize potential issues yet still execute the test opportunely to collect concrete failure signals.
+Ideally, an LRM should balance reasoning and action by using internal simulation to refine its choices while leveraging real-world feedback to correct errors. For instance, when debugging a failing test case, a well-balanced model would hypothesize potential issues yet still execute the test opportunely to collect concrete failure signals. This balance is particularly critical in software engineering tasks, where models must understand complex codebases, reason about potential fixes, and validate their solutions through testing.
 
-Unfortunately, achieving this balance is inherently challenging. In such settings, feedback is sparse, compelling LRMs to rely heavily on internal simulation to make the most out of every iteration. However, prior research has demonstrated that LRMs exhibit significant vulnerability to knowledge insufficiency, where gaps in understanding can cascade into compounding errors throughout the reasoning process. Consequently, excessive simulation without sufficient external information can ultimately lead to failure. The situation is especially difficult for environments with limited interaction opportunities.
+Unfortunately, achieving this balance is inherently challenging. In such settings, feedback is sparse, compelling LRMs to rely heavily on internal simulation to make the most out of every iteration. However, prior research has demonstrated that LRMs exhibit significant vulnerability to knowledge insufficiency, where gaps in understanding can cascade into compounding errors throughout the reasoning process \cite{li2025searcho1agenticsearchenhancedlarge, zhong2024evaluationopenaio1opportunities, LingFLHLMS23, chia2024reasoningpathsoptimizationlearning}. This challenge is exacerbated by LRMs' sensitivity to prompt modifications \cite{openai_learning_to_reason_2024, deepseekai2025deepseekr1incentivizingreasoningcapability}, which can disrupt their ability to maintain and process contextual information. These limitations become especially critical in agentic scenarios, where models must simultaneously gather, retain, and act upon new information \cite{zhang2024agenticinformationretrieval, yang2024sweagentagentcomputerinterfacesenable}. Consequently, excessive simulation without sufficient external information can ultimately lead to failure. The situation is especially difficult for environments with limited interaction opportunities.
 
 \section{Manifestations of Overthinking}
 \label{sec:manifestations_detailed}
 
-Our investigation into impaired decision-making in AI agents draws from a detailed analysis of agent-environment interactions. These interactions are recorded in what we term trajectories - comprehensive logs that capture the complete sequence of agent actions, environment responses, and (where available) the agent's reasoning process.
+Our investigation into impaired decision-making in AI agents draws from a detailed analysis of agent-environment interactions. These interactions are recorded in what we term trajectories - comprehensive logs that capture the complete sequence of agent actions, environment responses, and (where available) the agent's reasoning process. As outlined in \cref{evaluation_framework}, we systematically analyzed these trajectories to understand patterns of \textbf{overthinking}.
 
-Through this analysis, we identified three distinct patterns of \textbf{overthinking}:
+While most trajectories include the agent's explicit reasoning process, those from the o1 family exclude these reasoning tokens \cite{openai_learning_to_reason_2024}. This limitation led us to focus our analysis on observable behaviors, which are the concrete actions agents take in response to environmental challenges.
+
+Through this analysis, we identified three distinct patterns of \textbf{overthinking}, as illustrated in \cref{fig:manifestations}:
 
 \subsection{Analysis Paralysis}
-When faced with challenges, LRMs tend to shift their focus from immediate actions to elaborate future planning. They generate increasingly complex action sequences but struggle to execute them systematically. Rather than addressing immediate errors, they construct intricate plans that often remain unexecuted, leading to a cycle of planning without progress.
+When faced with challenges, LRMs tend to shift their focus from immediate actions to elaborate future planning. They generate increasingly complex action sequences but struggle to execute them systematically. Rather than addressing immediate errors, they construct intricate plans that often remain unexecuted, leading to a cycle of planning without progress. This behavior is particularly evident in software engineering tasks, where models may spend excessive time analyzing potential code changes without actually implementing and testing them.
 
 \subsection{Rogue Actions}
-We observe cases where agents deliberately try to bypass environmental exploration by generating chains of interdependent actions in a single step. Despite their prior demonstrated awareness of step-by-step interaction requirements, models proceed to construct elaborate action sequences that presume the success of each preceding step, effectively substituting real environmental feedback with internal simulation.
+We observe cases where agents deliberately try to bypass environmental exploration by generating chains of interdependent actions in a single step. Despite their prior demonstrated awareness of step-by-step interaction requirements, models proceed to construct elaborate action sequences that presume the success of each preceding step, effectively substituting real environmental feedback with internal simulation. This behavior often manifests as attempts to execute multiple file modifications or system commands simultaneously, without waiting for confirmation of each step's success.
 
 \subsection{Premature Disengagement}
-LRMs sometimes terminate tasks based solely on their internal simulation of the problem space, either through direct abandonment or by delegating hypothetical action sequences. This illustrates how overreliance on internal reasoning can lead to decisions without environmental validation.
+LRMs sometimes terminate tasks based solely on their internal simulation of the problem space, either through direct abandonment or by delegating hypothetical action sequences. This illustrates how overreliance on internal reasoning can lead to decisions without environmental validation. For example, a model might declare a bug fixed based on its analysis of the code changes, without actually running the tests to verify the fix works as intended.
 
 \section{Quantifying Overthinking}
 \label{sec:quantifying}
 
 \subsection{Overthinking Score}
-To quantify overthinking behavior, we developed a systematic scoring method using an LLM-based evaluator. This evaluator analyzes model trajectories for the previously described patterns and assigns a score from 0 to 10, with higher scores indicating more severe overthinking behavior. Each score includes a detailed justification explaining which patterns were identified and their severity.
+To quantify overthinking behavior, we developed a systematic scoring method using an LLM-based evaluator. This evaluator analyzes model trajectories for the previously described patterns and assigns a score from 0 to 10, with higher scores indicating more severe overthinking behavior. Each score includes a detailed justification explaining which patterns were identified and their severity. The complete evaluation prompt and scoring criteria can be found in \cref{apx:prompt_overthinking}.
+
+Our analysis reveals two distinct patterns in overthinking behavior. First, regression analysis demonstrates a significant negative correlation between overthinking and issue resolution rates for both reasoning and non-reasoning models (\cref{fig:figure1}), with the latter showing a steeper decline in performance as overthinking increases. Second, a direct comparison reveals that reasoning models consistently exhibit higher overthinking scores—nearly three times higher than non-reasoning models—with this difference being statistically significant as shown in \cref{tab:overthinking_scores}.
 
 \subsection{Validation Methodology}
-To validate our LLM-based evaluator, we conducted an independent assessment where four expert annotators manually scored 20 randomly selected model traces. The Spearman rank correlation ($p = 0.800$) between human experts and our automated scoring system demonstrated a strong monotonic relationship. This non-parametric correlation measure confirms the reliability of our overthinking measurement methodology.
+To validate our LLM-based evaluator, we conducted an independent assessment where four expert annotators manually scored 20 randomly selected model traces. The Spearman rank correlation ($p = 0.800$) between human experts and our automated scoring system demonstrated a strong monotonic relationship, as shown in \cref{fig:human_eval}. This non-parametric correlation measure confirms the reliability of our overthinking measurement methodology.
+
+\subsection{Impact on Model Performance}
+Statistical analysis reveals that higher overthinking scores correlate with decreased performance across all models. This correlation is particularly strong for reasoning models, which exhibit consistently higher overthinking tendencies, suggesting that excessive reliance on internal simulation impairs task performance. As illustrated in \cref{fig:figure1}, model nomenclature such as "FC" (indicating native function calling capability), "DS" (representing DeepSeek models), and suffixes o1\_high and o1\_low denoting models with reasoning effort set to high and low respectively, all show this consistent pattern.
+
+\subsection{Practical Implications}
+Our findings demonstrate that simple efforts to mitigate overthinking can yield substantial benefits. By generating two candidate solutions using o1 with low reasoning effort and selecting the one with lower overthinking score, we not only improved issue resolution from 21\% to 26.3\% on SWE Bench Verified tasks (\cref{fig:figure2}), but also nearly matched the performance of high-reasoning configurations while \textbf{reducing computational costs by approximately 43\%}. This demonstrates that simple overthinking mitigation strategies can dramatically improve the efficiency of LRMs in real-world applications.
 
 \section{Evaluation Framework}
 \label{sec:eval_framework}
 
-Our evaluation framework consists of several key components:
+Our evaluation framework consists of several key components designed to systematically analyze overthinking behavior in LRMs. We employ SWE Bench Verified \cite{jimenez2024swebenchlanguagemodelsresolve, swebench_verified} as our benchmark, using the CodeAct agent scaffolding \cite{wang2024executablecodeactionselicit} within the OpenHands framework \cite{wang2024openhandsopenplatformai}. This setup creates a controlled environment where models must balance information gathering with reasoning chains while maintaining context across multiple interactions as illustrated in \autoref{fig:figure3}.
+
+\subsection{Models Evaluated}
+To comprehensively study the phenomenon and influence of overthinking, we consider 19 models across multiple dimensions:
+\begin{itemize}
+    \item \textbf{Reasoning Capabilities}: Both reasoning-optimized models and general-purpose language models
+    \item \textbf{Model Openness}: Proprietary models (e.g., OpenAI o1, Claude Sonnet 3.5) and open-source alternatives (e.g., DeepSeek-R1, Qwen2.5)
+    \item \textbf{Model Size}: From small (1.5B-14B) to large-scale models (32B-671B parameters)
+    \item \textbf{Function Calling Support}: Models with native function calling capabilities (e.g., OpenAI o1, GPT-4o) versus those without
+\end{itemize}
 
 \subsection{Trajectory Analysis}
 We analyze complete interaction logs that capture:
@@ -55,6 +74,8 @@ We analyze complete interaction logs that capture:
     \item Success or failure of task completion
 \end{itemize}
 
+Through our analysis of \textbf{3,908 trajectories}, we create a comprehensive open-source dataset to advance research in balancing reasoning and action in agentic environments. Each trajectory is accompanied by its overthinking score and detailed justification.
+
 \subsection{Pattern Recognition}
 Our framework systematically identifies instances of:
 \begin{itemize}
@@ -64,25 +85,31 @@ Our framework systematically identifies instances of:
     \item Disregard for environmental feedback
 \end{itemize}
 
+These patterns are evaluated in the context of software engineering tasks, where we can objectively measure task completion through automated test suites and code validation.
+
 \subsection{Statistical Validation}
 We employ rigorous statistical methods to ensure the reliability of our findings:
 \begin{itemize}
-    \item Spearman correlation for human-automated agreement
-    \item T-tests for comparing different model populations
-    \item Regression analysis for performance impact assessment
+    \item Spearman correlation for human-automated agreement, showing strong correlation ($p = 0.800$)
+    \item T-tests for comparing different model populations, revealing significant differences between reasoning and non-reasoning models
+    \item Regression analysis for performance impact assessment, demonstrating consistent negative correlation between overthinking and task success
 \end{itemize}
+
+The complete analytical framework and results are presented in \cref{evaluation_framework}. The tools used for the statistical analysis can be found in \cref{stat_framework}.
 
 \section{Implementation Details}
 \label{sec:implementation}
 
 \subsection{LLM-as-Judge System}
-Our evaluation system uses Claude Sonnet 3.5 as the judge model, configured with:
+Following the LLM-as-a-judge methodology \cite{zheng2023judgingllmasajudgemtbenchchatbot}, our evaluation system uses Claude Sonnet 3.5 as the judge model, configured with:
 \begin{itemize}
     \item Temperature set to 0 for deterministic scoring
     \item 200k token context window to process full trajectories
     \item Structured output format for consistent scoring
     \item Detailed justification requirements for transparency
 \end{itemize}
+
+Claude Sonnet 3.5 was selected for its extensive context window, allowing it to process complete trajectories alongside the evaluation criteria. Notably, the evaluator does not have access to the final issue resolution outcome, ensuring that the overthinking assessment remains independent of task success and thereby eliminating potential biases.
 
 \subsection{Scoring Criteria}
 The scoring system evaluates trajectories on multiple dimensions:
@@ -93,25 +120,59 @@ The scoring system evaluates trajectories on multiple dimensions:
     \item Completion of necessary validation steps
 \end{itemize}
 
+\subsection{Token Usage Analysis}
+We investigated the relationship between token consumption and overthinking behavior in the o1 model. We conducted experiments by manipulating the model's reasoning effort parameter between high and low settings, which influences the number of reasoning tokens used \cite{openai_chat_api}. Our analysis revealed an unexpected pattern: in agent-based scenarios, o1 models with low reasoning effort demonstrated 35\% higher overthinking scores compared to their high-effort counterparts. As shown in \cref{tab:o1_model_comparison}, the difference in averaged overthinking scores between the two configurations is statistically significant, suggesting that increased token allocation might paradoxically reduce overthinking in agentic contexts.
+
+\subsection{Function Calling Impact}
+Our experimental analysis compared O1 model configurations with high reasoning effort, evaluating performance both with and without native function calling (FC) capabilities. The integration of FC capabilities yielded substantial improvements:
+\begin{itemize}
+    \item Performance score increased from 29.1\% to 47.7\%
+    \item Average overthinking score reduced from 2.47 to 0.56
+\end{itemize}
+
+However, benchmarking against BCFL \cite{berkeley-function-calling-leaderboard} reveals a more nuanced pattern, where the performance differential between FC and non-FC implementations of O1 in multi-turn environments shows a modest improvement from 36\% to 41\%. This comparatively smaller enhancement suggests that FC implementation alone cannot fully account for the dramatic performance improvements observed in our primary experiments.
+
 \section{Limitations and Considerations}
 \label{sec:limitations}
 
-While our framework provides valuable insights into overthinking behavior, it has several limitations:
+While our framework provides valuable insights into overthinking behavior, it has several limitations that inform our ongoing research directions:
 
 \subsection{Technical Limitations}
 \begin{itemize}
-    \item Limited access to internal reasoning for some models
-    \item Potential bias in LLM-based evaluation
-    \item Computational cost of trajectory analysis
-    \item Scalability challenges for large datasets
+    \item \textbf{Limited Access to Internal Reasoning}: Models like o1 exclude reasoning tokens \cite{openai_learning_to_reason_2024}, forcing us to rely on observable behaviors. This limitation may obscure some aspects of the overthinking process.
+    
+    \item \textbf{Potential Bias in LLM-based Evaluation}: While our LLM-as-judge approach shows strong correlation with human evaluators, the use of Claude Sonnet 3.5 as an evaluator may introduce its own biases in overthinking detection.
+    
+    \item \textbf{Computational Cost}: Processing and analyzing 3,908 trajectories requires significant computational resources, particularly for models with high reasoning effort settings.
+    
+    \item \textbf{Scalability Challenges}: The current framework may face challenges scaling to larger datasets or more complex interaction patterns.
 \end{itemize}
 
 \subsection{Methodological Considerations}
 \begin{itemize}
-    \item Subjectivity in pattern identification
-    \item Complexity of human validation process
-    \item Domain-specificity of current findings
-    \item Generalizability to other tasks
+    \item \textbf{Pattern Identification}: While we've identified three main patterns of overthinking, there may be other manifestations that our current framework doesn't capture.
+    
+    \item \textbf{Human Validation Process}: The complexity of validating overthinking scores requires significant expert time and may not scale well to larger studies.
+    
+    \item \textbf{Domain Specificity}: Our findings are primarily based on software engineering tasks using SWE Bench Verified. The patterns and implications may differ in other domains.
+    
+    \item \textbf{Model Size Effects}: Our analysis of DeepSeek-R1-671B revealed overthinking scores comparable to DeepSeek-V3-671B, suggesting that model scale and training methodology interact in complex ways that warrant further investigation.
 \end{itemize}
 
-These limitations inform our ongoing work to refine and improve the framework while maintaining its practical utility for understanding and addressing overthinking in LRMs.
+\subsection{Future Research Directions}
+Our analysis suggests two promising approaches to mitigate overthinking in LRMs:
+
+\begin{itemize}
+    \item \textbf{Native Function-Calling}: The success of function-calling architectures hints at the importance of explicit interaction training, though our BCFL benchmarking suggests this alone isn't sufficient.
+    
+    \item \textbf{Selective Reinforcement Learning}: The effectiveness of limited reinforcement learning in DeepSeek-R1-671B points to the role of training methodology in controlling overthinking tendencies.
+\end{itemize}
+
+These insights open important questions for future research:
+\begin{itemize}
+    \item How do these approaches generalize across different domains?
+    \item How can we optimize for environments where environmental interaction carries varying costs?
+    \item What role does model scale play in overthinking behavior?
+\end{itemize}
+
+Understanding these dynamics could help develop more robust solutions that prevent, rather than just mitigate, overthinking behaviors in large reasoning models. To facilitate further research in this direction, we release our evaluation framework and dataset of 3,908 trajectories, enabling the broader research community to build upon these findings across different environments and architectures.
