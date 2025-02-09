@@ -3,6 +3,20 @@
 
 Large Reasoning Models (LRMs) represent a breakthrough in AI problem-solving capabilities, yet their effectiveness in interactive environments remains poorly understood. This thesis introduces and analyzes the phenomenon of \textbf{overthinking} in LRMs - a tendency where models prioritize elaborate internal simulations of potential actions over gathering actual environmental feedback. Through extensive experiments on software engineering tasks using SWE Bench Verified, we develop a systematic framework to quantify overthinking behavior on a 0-10 scale, measuring how models balance internal reasoning chains against environmental interaction.
 
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=1\linewidth]{model_analysis_combined.pdf}
+    \caption{Higher overthinking scores (tendency to favor internal reasoning over environmental feedback) correlate with lower issue resolution rates across all models. Reasoning models exhibit consistently higher overthinking tendencies, suggesting that excessive reliance on internal simulation impairs task performance. Model nomenclature: "FC" indicates native function calling capability, "DS" represents DeepSeek models, and suffixes o1\_high and o1\_low denote models with reasoning effort set to high and low respectively.}
+    \label{fig:figure1}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=1\linewidth]{pass_at_k_plot.pdf}
+    \caption{Pass@k performance for SWE Bench Verified when selecting responses based on overthinking scores. By choosing solutions with minimal overthinking from multiple runs of o1 with low reasoning effort, we achieve performance comparable to high reasoning effort configurations at substantially lower computational cost. The flattening curve suggests diminishing returns from additional iterations, with detailed performance metrics provided in \cref{tab:o1_model_comparison}. The confidence intervals (CI) showcased were computed using Wilson score.}
+    \label{fig:figure2}
+\end{figure}
+
 Analysis of \textbf{3,908 trajectories} reveals that overthinking significantly impairs model performance, with strong negative correlations between overthinking scores and issue resolution capabilities (R² = 0.808, p = 0.006 for reasoning models). Notably, LRMs exhibit higher overthinking scores (2.320 ± 1.120) compared to non-reasoning models (0.865 ± 0.432, p = 0.019). Based on our findings, we propose that integrating native function-calling capabilities during training may help models better balance reasoning and action.
 
 \section{The Rise of Large Reasoning Models}
