@@ -3,6 +3,20 @@
 
 This chapter provides essential background on Large Reasoning Models (LRMs) and agentic environments, establishing the foundation for understanding the overthinking phenomenon we explore in this thesis.
 
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=1\linewidth]{manifestations.pdf}
+    \caption{Three distinct patterns of overthinking behavior in LRM agent trajectories. (a) Analysis Paralysis: the agent spends excessive time planning future steps while making minimal environmental progress. (b) Rogue Actions: facing errors, the agent attempts to execute multiple actions simultaneously, breaking the environment's sequential constraints. (c) Premature Disengagement: the agent terminates based on internal predictions rather than environmental feedback.}
+    \label{fig:manifestations}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=1\linewidth]{figure2.pdf}
+    \caption{OpenHands Execution Pipeline. 1) The system initializes by presenting the agent with the primary issue and previous action history. 2) The agent reaches a decision point -- 2a) Direct action formulation and execution, or 2b) Internal simulation of potential actions and outcomes, potentially leading to \textbf{overthinking}. 3) The chosen action is executed, generating environmental feedback which updates the event stream. This cycle continues until task completion.}
+    \label{fig:figure3}
+\end{figure}
+
 \section{Large Reasoning Models}
 \label{sec:lrm}
 
